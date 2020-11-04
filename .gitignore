@@ -1,0 +1,4 @@
+.idea
+.terraform
+terraform-provider-adops
+*.tfstate*
