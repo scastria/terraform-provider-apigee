@@ -43,13 +43,13 @@ func (c *Client) HttpRequest(path string, method string, body bytes.Buffer) (clo
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
+	if (resp.StatusCode < http.StatusOK) || (resp.StatusCode >= http.StatusMultipleChoices) {
 		respBody := new(bytes.Buffer)
 		_, err := respBody.ReadFrom(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("got a non 200 status code: %v", resp.StatusCode)
+			return nil, fmt.Errorf("got a non 2XX status code: %v", resp.StatusCode)
 		}
-		return nil, fmt.Errorf("got a non 200 status code: %v - %s", resp.StatusCode, respBody.String())
+		return nil, fmt.Errorf("got a non 2XX status code: %v - %s", resp.StatusCode, respBody.String())
 	}
 	return resp.Body, nil
 }

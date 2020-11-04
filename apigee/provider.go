@@ -38,7 +38,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			//"apigee_pipeline": resourcePipeline(),
+			"apigee_user": resourceUser(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

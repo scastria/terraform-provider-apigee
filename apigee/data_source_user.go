@@ -36,14 +36,14 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	user := &client.User{}
-	err = json.NewDecoder(body).Decode(user)
+	retVal := &client.User{}
+	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	var diags diag.Diagnostics
-	d.Set("first_name", user.FirstName)
-	d.Set("last_name", user.LastName)
-	d.SetId(emailId)
+	d.Set("first_name", retVal.FirstName)
+	d.Set("last_name", retVal.LastName)
+	d.SetId(retVal.EmailId)
 	return diags
 }
