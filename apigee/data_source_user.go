@@ -30,18 +30,20 @@ func dataSourceUser() *schema.Resource {
 }
 
 func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	emailId := d.Get("email_id").(string)
 	body, err := c.HttpRequest("users/"+emailId, "GET", bytes.Buffer{})
 	if err != nil {
+		d.SetId("")
 		return diag.FromErr(err)
 	}
 	retVal := &client.User{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
+		d.SetId("")
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
 	d.Set("first_name", retVal.FirstName)
 	d.Set("last_name", retVal.LastName)
 	d.SetId(retVal.EmailId)

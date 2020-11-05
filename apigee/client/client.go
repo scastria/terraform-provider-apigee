@@ -30,7 +30,7 @@ func NewClient(username string, password string, server string, port int, organi
 func (c *Client) HttpRequest(path string, method string, body bytes.Buffer) (closer io.ReadCloser, err error) {
 	req, err := http.NewRequest(method, c.requestPath(path), &body)
 	if err != nil {
-		return nil, err
+		return nil, &RequestError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 	req.SetBasicAuth(c.username, c.password)
 	switch method {
@@ -41,15 +41,15 @@ func (c *Client) HttpRequest(path string, method string, body bytes.Buffer) (clo
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, &RequestError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 	if (resp.StatusCode < http.StatusOK) || (resp.StatusCode >= http.StatusMultipleChoices) {
 		respBody := new(bytes.Buffer)
 		_, err := respBody.ReadFrom(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("got a non 2XX status code: %v", resp.StatusCode)
+			return nil, &RequestError{StatusCode: resp.StatusCode, Err: err}
 		}
-		return nil, fmt.Errorf("got a non 2XX status code: %v - %s", resp.StatusCode, respBody.String())
+		return nil, &RequestError{StatusCode: resp.StatusCode, Err: fmt.Errorf("%s", respBody.String())}
 	}
 	return resp.Body, nil
 }

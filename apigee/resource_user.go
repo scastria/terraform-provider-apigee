@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
+	"net/http"
 )
 
 func resourceUser() *schema.Resource {
@@ -15,6 +16,9 @@ func resourceUser() *schema.Resource {
 		ReadContext:   resourceUserRead,
 		UpdateContext: resourceUserUpdate,
 		DeleteContext: resourceUserDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceUserImport,
+		},
 		Schema: map[string]*schema.Schema{
 			"email_id": {
 				Type:     schema.TypeString,
@@ -37,7 +41,14 @@ func resourceUser() *schema.Resource {
 	}
 }
 
+func resourceUserImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	d.Set("email_id", d.Id())
+	d.SetId(d.Id())
+	return []*schema.ResourceData{d}, nil
+}
+
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
 	newUser := client.User{
@@ -48,34 +59,42 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	err := json.NewEncoder(&buf).Encode(newUser)
 	if err != nil {
+		d.SetId("")
 		return diag.FromErr(err)
 	}
 	body, err := c.HttpRequest("users", "POST", buf)
 	if err != nil {
+		d.SetId("")
 		return diag.FromErr(err)
 	}
 	retVal := &client.User{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
+		d.SetId("")
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
 	d.SetId(retVal.EmailId)
 	return diags
 }
 
 func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	body, err := c.HttpRequest("users/"+d.Id(), "GET", bytes.Buffer{})
 	if err != nil {
+		d.SetId("")
+		re := err.(*client.RequestError)
+		if re.StatusCode == http.StatusNotFound {
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	retVal := &client.User{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
+		d.SetId("")
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
 	d.Set("first_name", retVal.FirstName)
 	d.Set("last_name", retVal.LastName)
 	d.SetId(retVal.EmailId)
@@ -84,6 +103,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
 	upUser := client.User{
@@ -105,7 +125,6 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
 	d.Set("first_name", retVal.FirstName)
 	d.Set("last_name", retVal.LastName)
 	d.SetId(retVal.EmailId)
@@ -113,6 +132,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	body, err := c.HttpRequest("users/"+d.Id(), "DELETE", bytes.Buffer{})
 	if err != nil {
@@ -123,6 +143,5 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
 	return diags
 }
