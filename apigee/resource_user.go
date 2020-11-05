@@ -110,7 +110,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		EmailId:   d.Get("email_id").(string),
 		FirstName: d.Get("first_name").(string),
 		LastName:  d.Get("last_name").(string),
-		Password:  d.Get("password").(string),
+	}
+	if d.HasChange("password") {
+		upUser.Password = d.Get("password").(string)
 	}
 	err := json.NewEncoder(&buf).Encode(upUser)
 	if err != nil {
@@ -125,23 +127,16 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.Set("first_name", retVal.FirstName)
-	d.Set("last_name", retVal.LastName)
-	d.SetId(retVal.EmailId)
 	return diags
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	body, err := c.HttpRequest("users/"+d.Id(), "DELETE", bytes.Buffer{})
+	_, err := c.HttpRequest("users/"+d.Id(), "DELETE", bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	retVal := &client.User{}
-	err = json.NewDecoder(body).Decode(retVal)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	d.SetId("")
 	return diags
 }
