@@ -3,10 +3,13 @@ package client
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-http-utils/headers"
 	"io"
-	"mime"
 	"net/http"
+	"net/url"
+)
+
+const (
+	FormEncoded = "application/x-www-form-urlencoded"
 )
 
 type Client struct {
@@ -29,17 +32,27 @@ func NewClient(username string, password string, server string, port int, organi
 	}
 }
 
-func (c *Client) HttpRequest(path string, method string, body bytes.Buffer) (closer io.ReadCloser, err error) {
+func (c *Client) HttpRequest(method string, path string, query url.Values, headerMap http.Header, body bytes.Buffer) (closer io.ReadCloser, err error) {
 	req, err := http.NewRequest(method, c.requestPath(path), &body)
 	if err != nil {
 		return nil, &RequestError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
 	req.SetBasicAuth(c.username, c.password)
-	switch method {
-	case http.MethodGet:
-	case http.MethodDelete:
-	default:
-		req.Header.Add(headers.ContentType, mime.TypeByExtension(".json"))
+	if query != nil {
+		requestQuery := req.URL.Query()
+		for key, values := range query {
+			for _, value := range values {
+				requestQuery.Add(key, value)
+			}
+		}
+		req.URL.RawQuery = requestQuery.Encode()
+	}
+	if headerMap != nil {
+		for key, values := range headerMap {
+			for _, value := range values {
+				req.Header.Add(key, value)
+			}
+		}
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

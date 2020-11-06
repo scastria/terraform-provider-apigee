@@ -38,8 +38,9 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"apigee_user": resourceUser(),
-			"apigee_role": resourceRole(),
+			"apigee_user":      resourceUser(),
+			"apigee_role":      resourceRole(),
+			"apigee_user_role": resourceUserRole(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),
