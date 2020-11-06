@@ -121,7 +121,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf("users/%s", upUser.EmailId)
+	requestPath := fmt.Sprintf("users/%s", d.Id())
 	body, err := c.HttpRequest(requestPath, "PUT", buf)
 	if err != nil {
 		return diag.FromErr(err)
@@ -131,6 +131,8 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	//EmailId can be changed which changes the id
+	d.SetId(retVal.EmailId)
 	return diags
 }
 
