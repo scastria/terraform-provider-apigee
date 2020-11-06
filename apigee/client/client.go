@@ -3,7 +3,9 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-http-utils/headers"
 	"io"
+	"mime"
 	"net/http"
 )
 
@@ -37,7 +39,7 @@ func (c *Client) HttpRequest(path string, method string, body bytes.Buffer) (clo
 	case http.MethodGet:
 	case http.MethodDelete:
 	default:
-		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add(headers.ContentType, mime.TypeByExtension(".json"))
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
