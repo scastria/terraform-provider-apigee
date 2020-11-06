@@ -34,8 +34,8 @@ func (c *Client) HttpRequest(path string, method string, body bytes.Buffer) (clo
 	}
 	req.SetBasicAuth(c.username, c.password)
 	switch method {
-	case "GET":
-	case "DELETE":
+	case http.MethodGet:
+	case http.MethodDelete:
 	default:
 		req.Header.Add("Content-Type", "application/json")
 	}

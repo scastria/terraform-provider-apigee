@@ -64,7 +64,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 	requestPath := fmt.Sprintf("users")
-	body, err := c.HttpRequest(requestPath, "POST", buf)
+	body, err := c.HttpRequest(requestPath, http.MethodPost, buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -83,7 +83,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf("users/%s", d.Id())
-	body, err := c.HttpRequest(requestPath, "GET", bytes.Buffer{})
+	body, err := c.HttpRequest(requestPath, http.MethodGet, bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -122,7 +122,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 	requestPath := fmt.Sprintf("users/%s", d.Id())
-	body, err := c.HttpRequest(requestPath, "PUT", buf)
+	body, err := c.HttpRequest(requestPath, http.MethodPut, buf)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +140,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf("users/%s", d.Id())
-	_, err := c.HttpRequest(requestPath, "DELETE", bytes.Buffer{})
+	_, err := c.HttpRequest(requestPath, http.MethodDelete, bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -53,7 +53,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 	requestPath := fmt.Sprintf("o/%s/userroles", c.Organization)
-	body, err := c.HttpRequest(requestPath, "POST", buf)
+	body, err := c.HttpRequest(requestPath, http.MethodPost, buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -72,7 +72,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf("o/%s/userroles/%s", c.Organization, d.Id())
-	body, err := c.HttpRequest(requestPath, "GET", bytes.Buffer{})
+	body, err := c.HttpRequest(requestPath, http.MethodGet, bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -97,7 +97,7 @@ func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf("o/%s/userroles/%s", c.Organization, d.Id())
-	_, err := c.HttpRequest(requestPath, "DELETE", bytes.Buffer{})
+	_, err := c.HttpRequest(requestPath, http.MethodDelete, bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
