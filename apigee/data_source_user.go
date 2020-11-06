@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
@@ -33,7 +34,8 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	emailId := d.Get("email_id").(string)
-	body, err := c.HttpRequest("users/"+emailId, "GET", bytes.Buffer{})
+	requestPath := fmt.Sprintf("users/%s", emailId)
+	body, err := c.HttpRequest(requestPath, "GET", bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
@@ -62,7 +63,8 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	body, err := c.HttpRequest("users", "POST", buf)
+	requestPath := fmt.Sprintf("users")
+	body, err := c.HttpRequest(requestPath, "POST", buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -80,7 +82,8 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	body, err := c.HttpRequest("users/"+d.Id(), "GET", bytes.Buffer{})
+	requestPath := fmt.Sprintf("users/%s", d.Id())
+	body, err := c.HttpRequest(requestPath, "GET", bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -118,7 +121,8 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	body, err := c.HttpRequest("users/"+upUser.EmailId, "PUT", buf)
+	requestPath := fmt.Sprintf("users/%s", upUser.EmailId)
+	body, err := c.HttpRequest(requestPath, "PUT", buf)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,7 +137,8 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	_, err := c.HttpRequest("users/"+d.Id(), "DELETE", bytes.Buffer{})
+	requestPath := fmt.Sprintf("users/%s", d.Id())
+	_, err := c.HttpRequest(requestPath, "DELETE", bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -12,7 +12,7 @@ type Client struct {
 	password     string
 	server       string
 	port         int
-	organization string
+	Organization string
 	httpClient   *http.Client
 }
 
@@ -22,7 +22,7 @@ func NewClient(username string, password string, server string, port int, organi
 		password:     password,
 		server:       server,
 		port:         port,
-		organization: organization,
+		Organization: organization,
 		httpClient:   &http.Client{},
 	}
 }
