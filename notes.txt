@@ -1,0 +1,8 @@
+Read must fill in all fields except for Id
+- Id is not required because it is already known in order to call the Read function in the first place
+- All fields need to be set as the read could be done as part of an import where only the id is known (UNLESS a custom import function is provided to fill in the other id related fields before the Read is called)
+- Don't have to decode http response if all fields can be accessed from required input fields or decoding id
+
+Create must set Id
+
+Delete must set Id to empty string

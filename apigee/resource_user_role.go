@@ -18,7 +18,7 @@ func resourceUserRole() *schema.Resource {
 		ReadContext:   resourceUserRoleRead,
 		DeleteContext: resourceUserRoleDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceUserRoleImport,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"email_id": {
@@ -33,14 +33,6 @@ func resourceUserRole() *schema.Resource {
 			},
 		},
 	}
-}
-
-func resourceUserRoleImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	emailId, roleName := client.UserRoleDecodeId(d.Id())
-	d.Set("email_id", emailId)
-	d.Set("role_name", roleName)
-	d.SetId(d.Id())
-	return []*schema.ResourceData{d}, nil
 }
 
 func resourceUserRoleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -82,7 +74,6 @@ func resourceUserRoleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	d.Set("email_id", emailId)
 	d.Set("role_name", roleName)
-	d.SetId(d.Id())
 	return diags
 
 }

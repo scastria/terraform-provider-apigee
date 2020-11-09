@@ -20,7 +20,7 @@ func resourceUser() *schema.Resource {
 		UpdateContext: resourceUserUpdate,
 		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceUserImport,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"email_id": {
@@ -44,12 +44,6 @@ func resourceUser() *schema.Resource {
 	}
 }
 
-func resourceUserImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	d.Set("email_id", d.Id())
-	d.SetId(d.Id())
-	return []*schema.ResourceData{d}, nil
-}
-
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
@@ -69,18 +63,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	body, err := c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	retVal := &client.User{}
-	err = json.NewDecoder(body).Decode(retVal)
-	if err != nil {
-		d.SetId("")
-		return diag.FromErr(err)
-	}
-	d.SetId(retVal.EmailId)
+	d.SetId(newUser.EmailId)
 	return diags
 }
 
@@ -103,9 +91,10 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		d.SetId("")
 		return diag.FromErr(err)
 	}
+	d.Set("email_id", d.Id())
 	d.Set("first_name", retVal.FirstName)
 	d.Set("last_name", retVal.LastName)
-	d.SetId(retVal.EmailId)
+	//Cannot set password since it is not returned by API to keep secret
 	return diags
 
 }
@@ -130,17 +119,12 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	body, err := c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, buf)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	retVal := &client.User{}
-	err = json.NewDecoder(body).Decode(retVal)
+	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, buf)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	//EmailId can be changed which changes the id
-	d.SetId(retVal.EmailId)
+	d.SetId(upUser.EmailId)
 	return diags
 }
 
