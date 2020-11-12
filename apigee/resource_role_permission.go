@@ -108,7 +108,6 @@ func resourceRolePermissionRead(ctx context.Context, d *schema.ResourceData, m i
 	d.Set("path", path)
 	d.Set("permissions", retVal.Permissions)
 	return diags
-
 }
 
 func resourceRolePermissionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
