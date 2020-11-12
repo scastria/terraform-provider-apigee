@@ -42,6 +42,7 @@ func Provider() *schema.Provider {
 			"apigee_role":            resourceRole(),
 			"apigee_user_role":       resourceUserRole(),
 			"apigee_role_permission": resourceRolePermission(),
+			"apigee_cache":           resourceCache(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

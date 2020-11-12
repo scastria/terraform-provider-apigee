@@ -6,3 +6,5 @@ Read must fill in all fields except for Id
 Create must set Id
 
 Delete must set Id to empty string
+
+Update must set Id IF a property used to create Id has been changed
