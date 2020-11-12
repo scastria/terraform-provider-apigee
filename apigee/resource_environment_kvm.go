@@ -41,7 +41,8 @@ func resourceEnvironmentKVM() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:      schema.TypeString,
+					Sensitive: true,
 				},
 			},
 		},

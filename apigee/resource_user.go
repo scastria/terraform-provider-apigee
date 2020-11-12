@@ -96,7 +96,6 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("last_name", retVal.LastName)
 	//Cannot set password since it is not returned by API to keep secret
 	return diags
-
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
