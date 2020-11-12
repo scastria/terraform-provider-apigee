@@ -9,12 +9,12 @@ const (
 )
 
 type Cache struct {
-	EnvironmentName                   string
-	Name                              string     `json:"name"`
-	Description                       string     `json:"description,omitempty"`
-	ExpirySettings                    Expiration `json:"expirySettings,omitempty"`
-	OverflowToDisk                    bool       `json:"overflowToDisk,omitempty"`
-	SkipCacheIfElementSizeInKBExceeds string     `json:"skipCacheIfElementSizeInKBExceeds,omitempty"`
+	EnvironmentName string
+	Name            string     `json:"name"`
+	Description     string     `json:"description,omitempty"`
+	ExpirySettings  Expiration `json:"expirySettings,omitempty"`
+	//OverflowToDisk                    bool       `json:"overflowToDisk,omitempty"`
+	SkipCacheIfElementSizeInKBExceeds int `json:"skipCacheIfElementSizeInKBExceeds,omitempty"`
 }
 
 type Expiration struct {

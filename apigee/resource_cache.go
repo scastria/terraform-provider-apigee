@@ -37,33 +37,27 @@ func resourceCache() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"expiry_settings": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"timeout_in_sec": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"time_of_day": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"expiry_date": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
+			"expiry_timeout_in_sec": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"expiry_time_of_day", "expiry_date"},
 			},
-			"overflow_to_disk": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+			"expiry_time_of_day": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"expiry_timeout_in_sec", "expiry_date"},
 			},
+			"expiry_date": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"expiry_timeout_in_sec", "expiry_time_of_day"},
+			},
+			//overflow_to_disk doesn't seem to work in the Apigee API
+			//"overflow_to_disk": {
+			//	Type:     schema.TypeBool,
+			//	Optional: true,
+			//	Computed: true,
+			//},
 			"skip_cache_if_element_size_in_kb_exceeds": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -79,8 +73,8 @@ func resourceCacheCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	newCache := client.Cache{
 		EnvironmentName: d.Get("environment_name").(string),
 		Name:            d.Get("name").(string),
-		Description:     d.Get("description").(string),
 	}
+	fillCache(&newCache, d)
 	err := json.NewEncoder(&buf).Encode(newCache)
 	if err != nil {
 		d.SetId("")
@@ -97,6 +91,45 @@ func resourceCacheCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	d.SetId(newCache.CacheEncodeId())
 	return diags
+}
+
+func fillCache(c *client.Cache, d *schema.ResourceData) {
+	description, ok := d.GetOk("description")
+	if ok {
+		c.Description = description.(string)
+	}
+	expiryTimeoutInSec, ok := d.GetOk("expiry_timeout_in_sec")
+	if ok {
+		c.ExpirySettings = client.Expiration{
+			TimeoutInSec: &client.ExpiryValue{
+				Value: expiryTimeoutInSec.(string),
+			},
+		}
+	}
+	expiryTimeOfDay, ok := d.GetOk("expiry_time_of_day")
+	if ok {
+		c.ExpirySettings = client.Expiration{
+			TimeOfDay: &client.ExpiryValue{
+				Value: expiryTimeOfDay.(string),
+			},
+		}
+	}
+	expiryDate, ok := d.GetOk("expiry_date")
+	if ok {
+		c.ExpirySettings = client.Expiration{
+			ExpiryDate: &client.ExpiryValue{
+				Value: expiryDate.(string),
+			},
+		}
+	}
+	//overflowToDisk, ok := d.GetOk("overflow_to_disk")
+	//if ok {
+	//	c.OverflowToDisk = overflowToDisk.(bool)
+	//}
+	skipCacheIfElementSizeInKbExceeds, ok := d.GetOk("skip_cache_if_element_size_in_kb_exceeds")
+	if ok {
+		c.SkipCacheIfElementSizeInKBExceeds = skipCacheIfElementSizeInKbExceeds.(int)
+	}
 }
 
 func resourceCacheRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -121,17 +154,23 @@ func resourceCacheRead(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 	d.Set("environment_name", envName)
 	d.Set("name", name)
-	d.Set("description", retVal.Description)
-	expirySettings := map[string]interface{}{}
-	if retVal.ExpirySettings.TimeoutInSec != nil {
-		expirySettings["timeout_in_sec"] = retVal.ExpirySettings.TimeoutInSec.Value
-	} else if retVal.ExpirySettings.TimeOfDay != nil {
-		expirySettings["time_of_day"] = retVal.ExpirySettings.TimeOfDay.Value
-	} else if retVal.ExpirySettings.ExpiryDate != nil {
-		expirySettings["expiry_date"] = retVal.ExpirySettings.ExpiryDate.Value
+	if retVal.Description != "" {
+		d.Set("description", retVal.Description)
 	}
-	d.Set("expiry_settings", []interface{}{expirySettings})
-	d.Set("overflow_to_disk", retVal.OverflowToDisk)
+	timeoutInSec := retVal.ExpirySettings.TimeoutInSec
+	timeOfDay := retVal.ExpirySettings.TimeOfDay
+	expiryDate := retVal.ExpirySettings.ExpiryDate
+	if (timeoutInSec != nil) && (timeoutInSec.Value != "") {
+		d.Set("expiry_timeout_in_sec", timeoutInSec.Value)
+	} else if (timeOfDay != nil) && (timeOfDay.Value != "") {
+		d.Set("expiry_time_of_day", timeOfDay.Value)
+	} else if (expiryDate != nil) && (expiryDate.Value != "") {
+		d.Set("expiry_date", expiryDate.Value)
+	}
+	//d.Set("overflow_to_disk", retVal.OverflowToDisk)
+	if retVal.SkipCacheIfElementSizeInKBExceeds != 0 {
+		d.Set("skip_cache_if_element_size_in_kb_exceeds", retVal.SkipCacheIfElementSizeInKBExceeds)
+	}
 	return diags
 }
 
@@ -143,29 +182,8 @@ func resourceCacheUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	upCache := client.Cache{
 		EnvironmentName: envName,
 		Name:            name,
-		Description:     d.Get("description").(string),
 	}
-	expirySettingsList := d.Get("expiry_settings").([]interface{})
-	if len(expirySettingsList) == 1 {
-		upCache.Description = "Bad"
-		expirySettings := expirySettingsList[0].(map[string]interface{})
-		timeoutInSec, timeoutInSecOk := expirySettings["timeout_in_sec"]
-		timeOfDay, timeOfDayOk := expirySettings["time_of_day"]
-		expiryDate, expiryDateOk := expirySettings["expiry_date"]
-		if (timeoutInSecOk) && (timeoutInSec.(string) != "") {
-			upCache.ExpirySettings.TimeoutInSec = &client.ExpiryValue{
-				Value: timeoutInSec.(string),
-			}
-		} else if (timeOfDayOk) && (timeOfDay.(string) != "") {
-			upCache.ExpirySettings.TimeOfDay = &client.ExpiryValue{
-				Value: timeOfDay.(string),
-			}
-		} else if (expiryDateOk) && (expiryDate.(string) != "") {
-			upCache.ExpirySettings.ExpiryDate = &client.ExpiryValue{
-				Value: expiryDate.(string),
-			}
-		}
-	}
+	fillCache(&upCache, d)
 	err := json.NewEncoder(&buf).Encode(upCache)
 	if err != nil {
 		return diag.FromErr(err)
