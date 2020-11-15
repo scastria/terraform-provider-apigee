@@ -12,11 +12,9 @@ type VirtualHost struct {
 	EnvironmentName string
 	Name            string   `json:"name"`
 	HostAliases     []string `json:"hostAliases"`
+	Port            string   `json:"port,omitempty"`
+	BaseURL         string   `json:"baseUrl,omitempty"`
 }
-
-//type SSL struct {
-//	Enabled string `json:"enabled"`
-//}
 
 func (c *VirtualHost) VirtualHostEncodeId() string {
 	return c.EnvironmentName + VirtualHostIdSeparator + c.Name

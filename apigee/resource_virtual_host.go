@@ -11,6 +11,7 @@ import (
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
+	"strconv"
 )
 
 func resourceVirtualHost() *schema.Resource {
@@ -40,23 +41,15 @@ func resourceVirtualHost() *schema.Resource {
 				},
 				Required: true,
 			},
-			//"host": {
-			//	Type:     schema.TypeString,
-			//	Required: true,
-			//},
-			//"port": {
-			//	Type:     schema.TypeInt,
-			//	Required: true,
-			//},
-			//"is_enabled": {
-			//	Type:     schema.TypeBool,
-			//	Optional: true,
-			//	Default:  true,
-			//},
-			//"ssl_enabled": {
-			//	Type:     schema.TypeBool,
-			//	Optional: true,
-			//},
+			"port": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  80,
+			},
+			"base_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -96,16 +89,14 @@ func resourceVirtualHostCreate(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func fillVirtualHost(c *client.VirtualHost, d *schema.ResourceData) {
-	//isEnabled, ok := d.GetOk("is_enabled")
-	//if ok {
-	//	c.IsEnabled = isEnabled.(bool)
-	//}
-	//sslEnabled, ok := d.GetOk("ssl_enabled")
-	//if ok {
-	//	c.SSLInfo = &client.SSL{
-	//		Enabled: strconv.FormatBool(sslEnabled.(bool)),
-	//	}
-	//}
+	port, ok := d.GetOk("port")
+	if ok {
+		c.Port = strconv.Itoa(port.(int))
+	}
+	baseURL, ok := d.GetOk("base_url")
+	if ok {
+		c.BaseURL = baseURL.(string)
+	}
 }
 
 func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -131,6 +122,9 @@ func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("environment_name", envName)
 	d.Set("name", name)
 	d.Set("host_aliases", retVal.HostAliases)
+	port, _ := strconv.Atoi(retVal.Port)
+	d.Set("port", port)
+	d.Set("base_url", retVal.BaseURL)
 	return diags
 }
 
