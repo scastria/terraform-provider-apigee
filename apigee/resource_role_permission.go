@@ -49,11 +49,8 @@ func resourceRolePermissionCreate(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	permSet := d.Get("permissions").(*schema.Set).List()
-	permList := []string{}
-	for _, s := range permSet {
-		permList = append(permList, s.(string))
-	}
+	permSet := d.Get("permissions").(*schema.Set)
+	permList := convertSetToArray(permSet)
 	if len(permList) == 0 {
 		d.SetId("")
 		return diag.Errorf("permissions must contain at least 1 value")
