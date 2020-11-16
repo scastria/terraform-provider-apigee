@@ -1,6 +1,6 @@
-#Apigee Provider
+# Apigee Provider
 The Apigee provider is used to interact with the many resources supported by Apigee.  The provider needs to be configured with the proper credentials before it can be used.
-##Example Usage
+## Example Usage
 Terraform 0.13 and later:
 
 ```hcl
