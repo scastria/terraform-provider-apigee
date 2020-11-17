@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"net/http"
+	"regexp"
 )
 
 func dataSourceUser() *schema.Resource {
@@ -16,8 +18,9 @@ func dataSourceUser() *schema.Resource {
 		ReadContext: dataSourceUserRead,
 		Schema: map[string]*schema.Schema{
 			"email_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`), "must be a valid email address"),
 			},
 			"first_name": {
 				Type:     schema.TypeString,

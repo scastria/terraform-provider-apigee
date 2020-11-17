@@ -8,6 +8,7 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
@@ -39,8 +40,9 @@ func resourceTargetServer() *schema.Resource {
 				Required: true,
 			},
 			"port": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntBetween(0, 65535),
 			},
 			"is_enabled": {
 				Type:     schema.TypeBool,

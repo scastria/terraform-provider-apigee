@@ -8,6 +8,7 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
@@ -42,13 +43,15 @@ func resourceVirtualHost() *schema.Resource {
 				Required: true,
 			},
 			"port": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  80,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      80,
+				ValidateFunc: validation.IntBetween(0, 65535),
 			},
 			"base_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.IsURLWithScheme([]string{"http", "https"}),
 			},
 		},
 	}

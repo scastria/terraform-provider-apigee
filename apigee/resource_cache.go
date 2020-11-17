@@ -8,9 +8,11 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
+	"regexp"
 	"strconv"
 )
 
@@ -42,16 +44,19 @@ func resourceCache() *schema.Resource {
 				Type:          schema.TypeInt,
 				Optional:      true,
 				ConflictsWith: []string{"expiry_time_of_day", "expiry_date"},
+				ValidateFunc:  validation.IntAtLeast(0),
 			},
 			"expiry_time_of_day": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"expiry_timeout_in_sec", "expiry_date"},
+				ValidateFunc:  validation.StringMatch(regexp.MustCompile(`^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$`), "must be a valid military time - HH:mm:ss"),
 			},
 			"expiry_date": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ConflictsWith: []string{"expiry_timeout_in_sec", "expiry_time_of_day"},
+				ValidateFunc:  validation.StringMatch(regexp.MustCompile(`^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-([12]\d{3})$`), "must be a valid date - MM-dd-yyyy"),
 			},
 			//overflow_to_disk doesn't seem to work in the Apigee API
 			//"overflow_to_disk": {
@@ -60,8 +65,9 @@ func resourceCache() *schema.Resource {
 			//	Computed: true,
 			//},
 			"skip_cache_if_element_size_in_kb_exceeds": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 		},
 	}

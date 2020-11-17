@@ -7,9 +7,11 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"net/http"
 	"net/url"
+	"regexp"
 )
 
 func resourceUserRole() *schema.Resource {
@@ -22,9 +24,10 @@ func resourceUserRole() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"email_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`), "must be a valid email address"),
 			},
 			"role_name": {
 				Type:     schema.TypeString,
