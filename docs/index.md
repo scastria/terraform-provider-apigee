@@ -17,7 +17,7 @@ terraform {
 provider "apigee" {
   username = "me@company.com"
   password = "XXXX"
-  server = "YYYY"
+  server = "api.enterprise.apigee.com"
   organization = "ZZZZ"
 }
 
@@ -35,7 +35,7 @@ provider "apigee" {
   version = "~> 0.1.0"
   username = "me@company.com"
   password = "XXXX"
-  server = "YYYY"
+  server = "api.enterprise.apigee.com"
   organization = "ZZZZ"
 }
 

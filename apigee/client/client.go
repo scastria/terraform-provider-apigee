@@ -69,6 +69,7 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 	return resp.Body, nil
 }
 
+// TODO: Allow non-SSL
 func (c *Client) requestPath(path string) string {
 	return fmt.Sprintf("https://%s:%d/v1/%s", c.server, c.port, path)
 }
