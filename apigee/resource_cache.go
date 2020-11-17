@@ -11,6 +11,7 @@ import (
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
+	"strconv"
 )
 
 func resourceCache() *schema.Resource {
@@ -38,7 +39,7 @@ func resourceCache() *schema.Resource {
 				Optional: true,
 			},
 			"expiry_timeout_in_sec": {
-				Type:          schema.TypeString,
+				Type:          schema.TypeInt,
 				Optional:      true,
 				ConflictsWith: []string{"expiry_time_of_day", "expiry_date"},
 			},
@@ -102,7 +103,7 @@ func fillCache(c *client.Cache, d *schema.ResourceData) {
 	if ok {
 		c.ExpirySettings = client.Expiration{
 			TimeoutInSec: &client.ExpiryValue{
-				Value: expiryTimeoutInSec.(string),
+				Value: strconv.Itoa(expiryTimeoutInSec.(int)),
 			},
 		}
 	}
@@ -161,7 +162,8 @@ func resourceCacheRead(ctx context.Context, d *schema.ResourceData, m interface{
 	timeOfDay := retVal.ExpirySettings.TimeOfDay
 	expiryDate := retVal.ExpirySettings.ExpiryDate
 	if (timeoutInSec != nil) && (timeoutInSec.Value != "") {
-		d.Set("expiry_timeout_in_sec", timeoutInSec.Value)
+		timeoutInSecInt, _ := strconv.Atoi(timeoutInSec.Value)
+		d.Set("expiry_timeout_in_sec", timeoutInSecInt)
 	} else if (timeOfDay != nil) && (timeOfDay.Value != "") {
 		d.Set("expiry_time_of_day", timeOfDay.Value)
 	} else if (expiryDate != nil) && (expiryDate.Value != "") {
