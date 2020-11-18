@@ -45,16 +45,11 @@ func resourceProxy() *schema.Resource {
 	}
 }
 
-func resourceProxyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-	c := m.(*client.Client)
-	name := d.Get("name").(string)
-	bundle := d.Get("bundle").(string)
+func importRevision(c *client.Client, name string, bundle string) (*client.ProxyRevision, error) {
 	//Turn filename into multi part buffer
 	mp, buf, err := client.GetMultiPartBuffer(bundle, "bundle")
 	if err != nil {
-		d.SetId("")
-		return diag.FromErr(err)
+		return nil, err
 	}
 	requestPath := fmt.Sprintf(client.ProxyPath, c.Organization)
 	requestHeaders := http.Header{
@@ -66,11 +61,22 @@ func resourceProxyCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	body, err := c.HttpRequest(http.MethodPost, requestPath, requestQuery, requestHeaders, buf)
 	if err != nil {
-		d.SetId("")
-		return diag.FromErr(err)
+		return nil, err
 	}
 	retVal := &client.ProxyRevision{}
 	err = json.NewDecoder(body).Decode(retVal)
+	if err != nil {
+		return nil, err
+	}
+	return retVal, nil
+}
+
+func resourceProxyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+	c := m.(*client.Client)
+	name := d.Get("name").(string)
+	bundle := d.Get("bundle").(string)
+	retVal, err := importRevision(c, name, bundle)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -110,30 +116,16 @@ func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{
 
 func resourceProxyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	//c := m.(*client.Client)
-	//buf := bytes.Buffer{}
-	//upUser := client.User{
-	//	EmailId:   d.Get("email_id").(string),
-	//	FirstName: d.Get("first_name").(string),
-	//	LastName:  d.Get("last_name").(string),
-	//}
-	//if d.HasChange("password") {
-	//	upUser.Password = d.Get("password").(string)
-	//}
-	//err := json.NewEncoder(&buf).Encode(upUser)
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
-	//requestPath := fmt.Sprintf(client.UserPathGet, d.Id())
-	//requestHeaders := http.Header{
-	//	headers.ContentType: []string{mime.TypeByExtension(".json")},
-	//}
-	//_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, buf)
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
-	////EmailId can be changed which changes the id
-	//d.SetId(upUser.EmailId)
+	c := m.(*client.Client)
+	name := d.Get("name").(string)
+	bundle := d.Get("bundle").(string)
+	retVal, err := importRevision(c, name, bundle)
+	if err != nil {
+		d.SetId("")
+		return diag.FromErr(err)
+	}
+	revision, _ := strconv.Atoi(retVal.Revision)
+	d.Set("revision", revision)
 	return diags
 }
 
