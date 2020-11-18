@@ -46,6 +46,7 @@ func Provider() *schema.Provider {
 			"apigee_environment_kvm": resourceEnvironmentKVM(),
 			"apigee_target_server":   resourceTargetServer(),
 			"apigee_virtual_host":    resourceVirtualHost(),
+			"apigee_proxy":           resourceProxy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

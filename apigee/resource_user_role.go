@@ -52,7 +52,7 @@ func resourceUserRoleCreate(ctx context.Context, d *schema.ResourceData, m inter
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.FormEncoded},
 	}
-	_, err := c.HttpRequest(http.MethodPost, requestPath, requestQuery, requestHeaders, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodPost, requestPath, requestQuery, requestHeaders, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -66,7 +66,7 @@ func resourceUserRoleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	emailId, roleName := client.UserRoleDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.UserRolePathGet, c.Organization, roleName, emailId)
-	_, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -86,7 +86,7 @@ func resourceUserRoleDelete(ctx context.Context, d *schema.ResourceData, m inter
 	emailId, roleName := client.UserRoleDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.UserRolePathGet, c.Organization, roleName, emailId)
-	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

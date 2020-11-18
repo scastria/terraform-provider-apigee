@@ -91,7 +91,7 @@ func resourceCacheCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -144,7 +144,7 @@ func resourceCacheRead(ctx context.Context, d *schema.ResourceData, m interface{
 	envName, name := client.CacheDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.CachePathGet, c.Organization, envName, name)
-	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, bytes.Buffer{})
+	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -200,7 +200,7 @@ func resourceCacheUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -212,7 +212,7 @@ func resourceCacheDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	envName, name := client.CacheDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.CachePathGet, c.Organization, envName, name)
-	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

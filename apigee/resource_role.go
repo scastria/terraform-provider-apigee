@@ -52,7 +52,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, m interface
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -65,7 +65,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.RolePathGet, c.Organization, d.Id())
-	_, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -83,7 +83,7 @@ func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.RolePathGet, c.Organization, d.Id())
-	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

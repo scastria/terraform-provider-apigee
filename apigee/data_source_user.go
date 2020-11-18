@@ -39,7 +39,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	c := m.(*client.Client)
 	emailId := d.Get("email_id").(string)
 	requestPath := fmt.Sprintf("users/%s", emailId)
-	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, bytes.Buffer{})
+	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)

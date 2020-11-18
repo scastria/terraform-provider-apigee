@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 const (
@@ -32,8 +34,8 @@ func NewClient(username string, password string, server string, port int, organi
 	}
 }
 
-func (c *Client) HttpRequest(method string, path string, query url.Values, headerMap http.Header, body bytes.Buffer) (closer io.ReadCloser, err error) {
-	req, err := http.NewRequest(method, c.requestPath(path), &body)
+func (c *Client) HttpRequest(method string, path string, query url.Values, headerMap http.Header, body *bytes.Buffer) (closer io.ReadCloser, err error) {
+	req, err := http.NewRequest(method, c.requestPath(path), body)
 	if err != nil {
 		return nil, &RequestError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
@@ -72,4 +74,24 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 // TODO: Allow non-SSL
 func (c *Client) requestPath(path string) string {
 	return fmt.Sprintf("https://%s:%d/v1/%s", c.server, c.port, path)
+}
+
+func GetMultiPartBuffer(filename string, key string) (*multipart.Writer, *bytes.Buffer, error) {
+	buf := bytes.Buffer{}
+	mp := multipart.NewWriter(&buf)
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+	fw, err := mp.CreateFormFile(key, filename)
+	if err != nil {
+		return nil, nil, err
+	}
+	_, err = io.Copy(fw, file)
+	if err != nil {
+		return nil, nil, err
+	}
+	mp.Close()
+	return mp, &buf, nil
 }

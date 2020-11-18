@@ -66,7 +66,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -79,7 +79,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.UserPathGet, d.Id())
-	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, bytes.Buffer{})
+	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -121,7 +121,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,7 +134,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.UserPathGet, d.Id())
-	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

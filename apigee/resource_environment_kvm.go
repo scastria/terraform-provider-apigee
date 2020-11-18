@@ -80,7 +80,7 @@ func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -111,7 +111,7 @@ func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m i
 	envName, name := client.EnvironmentKVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
-	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, bytes.Buffer{})
+	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -152,7 +152,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 			}
 			//Delete entry
 			requestPath := fmt.Sprintf(client.EnvironmentKVMPathGetEntry, c.Organization, envName, name, oldKey)
-			_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, bytes.Buffer{})
+			_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -172,7 +172,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -184,7 +184,7 @@ func resourceEnvironmentKVMDelete(ctx context.Context, d *schema.ResourceData, m
 	envName, name := client.EnvironmentKVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
-	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}

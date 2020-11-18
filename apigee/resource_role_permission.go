@@ -71,7 +71,7 @@ func resourceRolePermissionCreate(ctx context.Context, d *schema.ResourceData, m
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
-	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
+	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -88,7 +88,7 @@ func resourceRolePermissionRead(ctx context.Context, d *schema.ResourceData, m i
 	requestQuery := url.Values{
 		"path": []string{path},
 	}
-	body, err := c.HttpRequest(http.MethodGet, requestPath, requestQuery, nil, bytes.Buffer{})
+	body, err := c.HttpRequest(http.MethodGet, requestPath, requestQuery, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		re := err.(*client.RequestError)
@@ -119,7 +119,7 @@ func resourceRolePermissionDelete(ctx context.Context, d *schema.ResourceData, m
 	//Remove each perm
 	for _, p := range []string{"get", "put", "delete"} {
 		requestPath := fmt.Sprintf(client.RolePermissionPathGet, c.Organization, roleName, p)
-		_, err := c.HttpRequest(http.MethodDelete, requestPath, requestQuery, nil, bytes.Buffer{})
+		_, err := c.HttpRequest(http.MethodDelete, requestPath, requestQuery, nil, &bytes.Buffer{})
 		if err != nil {
 			re := err.(*client.RequestError)
 			if re.StatusCode != http.StatusNotFound {
