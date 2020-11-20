@@ -21,4 +21,4 @@ resource "apigee_shared_flow_deployment" "exampleDeployment" {
 ## Attribute Reference
 * `id` - Same as `environment_name`:`shared_flow_name`
 ## Import
-Proxy deployments can be imported using a proper value of `id` as described above
+Shared flow deployments can be imported using a proper value of `id` as described above
