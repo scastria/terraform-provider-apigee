@@ -46,11 +46,11 @@ func resourceEnvironmentKVM() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: customDiff,
+		CustomizeDiff: resourceEnvironmentKVMCustomDiff,
 	}
 }
 
-func customDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
+func resourceEnvironmentKVMCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
 	//A KVM cannot be decrypted so ForceNew if going from true to false
 	if !diff.HasChange("encrypted") {
 		return nil

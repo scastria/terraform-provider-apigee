@@ -42,7 +42,19 @@ func resourceProxy() *schema.Resource {
 				Computed: true,
 			},
 		},
+		CustomizeDiff: resourceProxyCustomDiff,
 	}
+}
+
+func resourceProxyCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
+	//Mark the revision as changing if bundle changes
+	if diff.HasChange("bundle") {
+		diff.SetNewComputed("revision")
+	}
+	if diff.HasChange("bundle_hash") {
+		diff.SetNewComputed("revision")
+	}
+	return nil
 }
 
 func importRevision(c *client.Client, name string, bundle string) (*client.ProxyRevision, error) {
