@@ -132,17 +132,11 @@ func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, 
 	requestPath := fmt.Sprintf(client.ProxyDeploymentPath, c.Organization, envName, proxyName)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
-		d.SetId("")
-		re := err.(*client.RequestError)
-		if re.StatusCode == http.StatusNotFound {
-			return diags
-		}
 		return diag.FromErr(err)
 	}
 	envDeployments := &client.ProxyDeployment{}
 	err = json.NewDecoder(body).Decode(envDeployments)
 	if err != nil {
-		d.SetId("")
 		return diag.FromErr(err)
 	}
 	//Delete each deployment
