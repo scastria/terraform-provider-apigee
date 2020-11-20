@@ -14,12 +14,12 @@ import (
 	"strconv"
 )
 
-func resourceProxy() *schema.Resource {
+func resourceSharedFlow() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceProxyCreate,
-		ReadContext:   resourceProxyRead,
-		UpdateContext: resourceProxyUpdate,
-		DeleteContext: resourceProxyDelete,
+		CreateContext: resourceSharedFlowCreate,
+		ReadContext:   resourceSharedFlowRead,
+		UpdateContext: resourceSharedFlowUpdate,
+		DeleteContext: resourceSharedFlowDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -42,11 +42,11 @@ func resourceProxy() *schema.Resource {
 				Computed: true,
 			},
 		},
-		CustomizeDiff: resourceProxyCustomDiff,
+		CustomizeDiff: resourceSharedFlowCustomDiff,
 	}
 }
 
-func resourceProxyCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
+func resourceSharedFlowCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
 	//Mark the revision as changing if bundle changes
 	if diff.HasChange("bundle") {
 		diff.SetNewComputed("revision")
@@ -57,13 +57,13 @@ func resourceProxyCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m i
 	return nil
 }
 
-func importProxyRevision(c *client.Client, name string, bundle string) (*client.ProxyRevision, error) {
+func importSharedFlowRevision(c *client.Client, name string, bundle string) (*client.SharedFlowRevision, error) {
 	//Turn filename into multi part buffer
 	mp, buf, err := client.GetMultiPartBuffer(bundle, "bundle")
 	if err != nil {
 		return nil, err
 	}
-	requestPath := fmt.Sprintf(client.ProxyPath, c.Organization)
+	requestPath := fmt.Sprintf(client.SharedFlowPath, c.Organization)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mp.FormDataContentType()},
 	}
@@ -75,7 +75,7 @@ func importProxyRevision(c *client.Client, name string, bundle string) (*client.
 	if err != nil {
 		return nil, err
 	}
-	retVal := &client.ProxyRevision{}
+	retVal := &client.SharedFlowRevision{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		return nil, err
@@ -83,12 +83,12 @@ func importProxyRevision(c *client.Client, name string, bundle string) (*client.
 	return retVal, nil
 }
 
-func resourceProxyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	name := d.Get("name").(string)
 	bundle := d.Get("bundle").(string)
-	retVal, err := importProxyRevision(c, name, bundle)
+	retVal, err := importSharedFlowRevision(c, name, bundle)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -99,10 +99,10 @@ func resourceProxyCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.ProxyPathGet, c.Organization, d.Id())
+	requestPath := fmt.Sprintf(client.SharedFlowPathGet, c.Organization, d.Id())
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -112,7 +112,7 @@ func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{
 		}
 		return diag.FromErr(err)
 	}
-	retVal := &client.Proxy{}
+	retVal := &client.SharedFlow{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		d.SetId("")
@@ -126,12 +126,12 @@ func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{
 	return diags
 }
 
-func resourceProxyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	name := d.Get("name").(string)
 	bundle := d.Get("bundle").(string)
-	retVal, err := importProxyRevision(c, name, bundle)
+	retVal, err := importSharedFlowRevision(c, name, bundle)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,10 +140,10 @@ func resourceProxyUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func resourceProxyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.ProxyPathGet, c.Organization, d.Id())
+	requestPath := fmt.Sprintf(client.SharedFlowPathGet, c.Organization, d.Id())
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)

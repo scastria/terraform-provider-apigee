@@ -139,7 +139,6 @@ func resourceVirtualHostUpdate(ctx context.Context, d *schema.ResourceData, m in
 	aliasSet := d.Get("host_aliases").(*schema.Set)
 	aliasList := convertSetToArray(aliasSet)
 	if len(aliasList) == 0 {
-		d.SetId("")
 		return diag.Errorf("host_aliases must contain at least 1 value")
 	}
 	upVirtualHost := client.VirtualHost{

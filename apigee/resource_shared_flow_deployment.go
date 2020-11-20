@@ -15,17 +15,17 @@ import (
 	"strconv"
 )
 
-func resourceProxyDeployment() *schema.Resource {
+func resourceSharedFlowDeployment() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceProxyDeploymentCreate,
-		ReadContext:   resourceProxyDeploymentRead,
-		UpdateContext: resourceProxyDeploymentUpdate,
-		DeleteContext: resourceProxyDeploymentDelete,
+		CreateContext: resourceSharedFlowDeploymentCreate,
+		ReadContext:   resourceSharedFlowDeploymentRead,
+		UpdateContext: resourceSharedFlowDeploymentUpdate,
+		DeleteContext: resourceSharedFlowDeploymentDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"proxy_name": {
+			"shared_flow_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -44,40 +44,40 @@ func resourceProxyDeployment() *schema.Resource {
 				Type:             schema.TypeInt,
 				Optional:         true,
 				ValidateFunc:     validation.IntAtLeast(0),
-				DiffSuppressFunc: resourceProxyDelayDiff,
+				DiffSuppressFunc: resourceSharedFlowDelayDiff,
 			},
 		},
 	}
 }
 
-func resourceProxyDelayDiff(k string, old string, n string, d *schema.ResourceData) bool {
+func resourceSharedFlowDelayDiff(k string, old string, n string, d *schema.ResourceData) bool {
 	//Suppress all diffs
 	return true
 }
 
-func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	newProxyDeployment := client.ProxyDeployment{
+	newSharedFlowDeployment := client.SharedFlowDeployment{
 		EnvironmentName: d.Get("environment_name").(string),
-		ProxyName:       d.Get("proxy_name").(string),
+		SharedFlowName:  d.Get("shared_flow_name").(string),
 	}
 	revision := d.Get("revision").(int)
-	requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, newProxyDeployment.EnvironmentName, newProxyDeployment.ProxyName, revision)
+	requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, newSharedFlowDeployment.EnvironmentName, newSharedFlowDeployment.SharedFlowName, revision)
 	_, err := c.HttpRequest(http.MethodPost, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	d.SetId(newProxyDeployment.ProxyDeploymentEncodeId())
+	d.SetId(newSharedFlowDeployment.SharedFlowDeploymentEncodeId())
 	return diags
 }
 
-func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, proxyName := client.ProxyDeploymentDecodeId(d.Id())
+	envName, sharedFlowName := client.SharedFlowDeploymentDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.ProxyDeploymentPath, c.Organization, envName, proxyName)
+	requestPath := fmt.Sprintf(client.SharedFlowDeploymentPath, c.Organization, envName, sharedFlowName)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -87,14 +87,14 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 		return diag.FromErr(err)
 	}
-	retVal := &client.ProxyDeployment{}
+	retVal := &client.SharedFlowDeployment{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
 	d.Set("environment_name", envName)
-	d.Set("proxy_name", proxyName)
+	d.Set("shared_flow_name", sharedFlowName)
 	//Retrieve the latest revision deployed as THE revision, assumes array is sorted
 	lastRevision := retVal.Revisions[len(retVal.Revisions)-1]
 	revision, _ := strconv.Atoi(lastRevision.Name)
@@ -102,13 +102,13 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, proxyName := client.ProxyDeploymentDecodeId(d.Id())
+	envName, sharedFlowName := client.SharedFlowDeploymentDecodeId(d.Id())
 	c := m.(*client.Client)
 	revision := d.Get("revision").(int)
 	delay := d.Get("delay").(int)
-	requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
+	requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, envName, sharedFlowName, revision)
 	requestForm := url.Values{
 		"override": []string{strconv.FormatBool(true)},
 		"delay":    []string{strconv.Itoa(delay)},
@@ -123,17 +123,17 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSharedFlowDeploymentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, proxyName := client.ProxyDeploymentDecodeId(d.Id())
+	envName, sharedFlowName := client.SharedFlowDeploymentDecodeId(d.Id())
 	c := m.(*client.Client)
-	//Get all deployments of this proxy to this environment
-	requestPath := fmt.Sprintf(client.ProxyDeploymentPath, c.Organization, envName, proxyName)
+	//Get all deployments of this shared flow to this environment
+	requestPath := fmt.Sprintf(client.SharedFlowDeploymentPath, c.Organization, envName, sharedFlowName)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	envDeployments := &client.ProxyDeployment{}
+	envDeployments := &client.SharedFlowDeployment{}
 	err = json.NewDecoder(body).Decode(envDeployments)
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,7 +141,7 @@ func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, 
 	//Delete each deployment
 	for _, rev := range envDeployments.Revisions {
 		revision, _ := strconv.Atoi(rev.Name)
-		requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
+		requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, envName, sharedFlowName, revision)
 		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 		if err != nil {
 			return diag.FromErr(err)

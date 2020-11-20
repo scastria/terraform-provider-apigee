@@ -9,12 +9,12 @@ const (
 )
 
 type ProxyDeployment struct {
-	ProxyName       string               `json:"name"`
-	EnvironmentName string               `json:"environment"`
-	Revisions       []RevisionDeployment `json:"revision"`
+	ProxyName       string                    `json:"name"`
+	EnvironmentName string                    `json:"environment"`
+	Revisions       []ProxyRevisionDeployment `json:"revision"`
 }
 
-type RevisionDeployment struct {
+type ProxyRevisionDeployment struct {
 	Name string `json:"name"`
 }
 
