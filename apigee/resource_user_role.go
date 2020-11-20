@@ -46,13 +46,13 @@ func resourceUserRoleCreate(ctx context.Context, d *schema.ResourceData, m inter
 		RoleName: d.Get("role_name").(string),
 	}
 	requestPath := fmt.Sprintf(client.UserRolePath, c.Organization, newUserRole.RoleName)
-	requestQuery := url.Values{
+	requestForm := url.Values{
 		"id": []string{newUserRole.EmailId},
 	}
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.FormEncoded},
 	}
-	_, err := c.HttpRequest(http.MethodPost, requestPath, requestQuery, requestHeaders, &bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, bytes.NewBufferString(requestForm.Encode()))
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
