@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 )
 
@@ -27,9 +28,10 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("APIGEE_SERVER", nil),
 			},
 			"port": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("APIGEE_PORT", 443),
+				Type:         schema.TypeInt,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("APIGEE_PORT", 443),
+				ValidateFunc: validation.IntBetween(0, 65535),
 			},
 			"organization": {
 				Type:        schema.TypeString,
@@ -38,15 +40,16 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"apigee_user":            resourceUser(),
-			"apigee_role":            resourceRole(),
-			"apigee_user_role":       resourceUserRole(),
-			"apigee_role_permission": resourceRolePermission(),
-			"apigee_cache":           resourceCache(),
-			"apigee_environment_kvm": resourceEnvironmentKVM(),
-			"apigee_target_server":   resourceTargetServer(),
-			"apigee_virtual_host":    resourceVirtualHost(),
-			"apigee_proxy":           resourceProxy(),
+			"apigee_user":             resourceUser(),
+			"apigee_role":             resourceRole(),
+			"apigee_user_role":        resourceUserRole(),
+			"apigee_role_permission":  resourceRolePermission(),
+			"apigee_cache":            resourceCache(),
+			"apigee_environment_kvm":  resourceEnvironmentKVM(),
+			"apigee_target_server":    resourceTargetServer(),
+			"apigee_virtual_host":     resourceVirtualHost(),
+			"apigee_proxy":            resourceProxy(),
+			"apigee_proxy_deployment": resourceProxyDeployment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

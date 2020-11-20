@@ -107,7 +107,7 @@ func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 	d.Set("name", d.Id())
-	//Retrieve the latest revision available as THE revision
+	//Retrieve the latest revision available as THE revision, assumes array is sorted
 	lastRevision := retVal.Revisions[len(retVal.Revisions)-1]
 	revision, _ := strconv.Atoi(lastRevision)
 	d.Set("revision", revision)
