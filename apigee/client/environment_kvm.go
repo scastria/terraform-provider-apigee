@@ -11,12 +11,12 @@ const (
 
 type EnvironmentKVM struct {
 	EnvironmentName string
-	Name            string  `json:"name"`
-	Encrypted       bool    `json:"encrypted,omitempty"`
-	Entries         []Entry `json:"entry,omitempty"`
+	Name            string     `json:"name"`
+	Encrypted       bool       `json:"encrypted,omitempty"`
+	Entries         []KVMEntry `json:"entry,omitempty"`
 }
 
-type Entry struct {
+type KVMEntry struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }

@@ -52,6 +52,7 @@ func Provider() *schema.Provider {
 			"apigee_proxy_deployment":       resourceProxyDeployment(),
 			"apigee_shared_flow":            resourceSharedFlow(),
 			"apigee_shared_flow_deployment": resourceSharedFlowDeployment(),
+			"apigee_developer":              resourceDeveloper(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

@@ -98,7 +98,7 @@ func fillEnvironmentKVM(c *client.EnvironmentKVM, d *schema.ResourceData) {
 	if ok {
 		entries := e.(map[string]interface{})
 		for name, value := range entries {
-			c.Entries = append(c.Entries, client.Entry{
+			c.Entries = append(c.Entries, client.KVMEntry{
 				Name:  name,
 				Value: value.(string),
 			})
