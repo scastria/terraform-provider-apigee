@@ -35,6 +35,6 @@ resource "apigee_product" "example" {
 * `scopes` - **(Optional, List of String)** OAuth scopes that are validated at runtime.
 * `attributes` - **(Optional, Map of String to String)** Keys and values to be stored as custom attributes of the product. Use this property to specify the `access` level of the API product as either `public`, `private`, or `internal`.
 ## Attribute Reference
-* `id` - Same as `email`
+* `id` - Same as `name`
 ## Import
 Products can be imported using a proper value of `id` as described above
