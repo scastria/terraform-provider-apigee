@@ -2,8 +2,11 @@
 Represents a permission assigned to a role
 ## Example usage
 ```hcl
+resource "apigee_role" "MyRole" {
+  name = "Readers"
+}
 resource "apigee_role_permission" "example" {
-  role_name = "Readers"
+  role_name = apigee_role.MyRole.name
   path = "/applications"
   permissions = [
     "get"

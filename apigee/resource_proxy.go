@@ -129,9 +129,8 @@ func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{
 func resourceProxyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	name := d.Get("name").(string)
 	bundle := d.Get("bundle").(string)
-	retVal, err := importProxyRevision(c, name, bundle)
+	retVal, err := importProxyRevision(c, d.Id(), bundle)
 	if err != nil {
 		return diag.FromErr(err)
 	}

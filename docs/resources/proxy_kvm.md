@@ -2,8 +2,13 @@
 Represents a kvm in a proxy
 ## Example usage
 ```hcl
+resource "apigee_proxy" "MyProxy" {
+  name = "MyProxy"
+  bundle = "proxies/MyProxy/MyProxy.zip"
+  bundle_hash = filebase64sha256("proxies/MyProxy/MyProxy.zip")
+}
 resource "apigee_proxy_kvm" "example" {
-  proxy_name = "proxy"
+  proxy_name = apigee_proxy.MyProxy.name
   name = "LookupValues"
   entry = {
     first = "firstValue"

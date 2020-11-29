@@ -2,9 +2,18 @@
 Represents a user assigned to a role
 ## Example usage
 ```hcl
-resource "apigee_user_role" "example" {
+resource "apigee_user" "MyUser" {
   email_id = "John.Smith@ihsmarkit.com"
-  role_name = "Readers"
+  first_name = "John"
+  last_name = "Smith"
+  password = "XXXX"
+}
+resource "apigee_role" "MyRole" {
+  name = "Readers"
+}
+resource "apigee_user_role" "example" {
+  email_id = apigee_user.MyUser.email_id
+  role_name = apigee_role.MyRole.name
 }
 ```
 ## Argument Reference

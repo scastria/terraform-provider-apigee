@@ -2,15 +2,15 @@
 Represents a shared flow's deployment to an environment
 ## Example usage
 ```hcl
-resource "apigee_shared_flow" "example" {
-  name = "ShawnTestFlow"
-  bundle = "sharedflows/ShawnTestFlow/ShawnTestFlow.zip"
-  bundle_hash = filebase64sha256("sharedflows/ShawnTestFlow/ShawnTestFlow.zip")
+resource "apigee_shared_flow" "MyFlow" {
+  name = "MyFlow"
+  bundle = "sharedflows/MyFlow/MyFlow.zip"
+  bundle_hash = filebase64sha256("sharedflows/MyFlow/MyFlow.zip")
 }
-resource "apigee_shared_flow_deployment" "exampleDeployment" {
-  shared_flow_name = apigee_shared_flow.MySharedFlow.name
+resource "apigee_shared_flow_deployment" "example" {
+  shared_flow_name = apigee_shared_flow.MyFlow.name
   environment_name = "dev"
-  revision = apigee_shared_flow.MySharedFlow.revision
+  revision = apigee_shared_flow.MyFlow.revision
 }
 ```
 ## Argument Reference

@@ -3,9 +3,9 @@ Represents a shared flow's latest revision
 ## Example usage
 ```hcl
 resource "apigee_shared_flow" "example" {
-  name = "ShawnTestFlow"
-  bundle = "sharedflows/ShawnTestFlow/ShawnTestFlow.zip"
-  bundle_hash = filebase64sha256("sharedflows/ShawnTestFlow/ShawnTestFlow.zip")
+  name = "MyFlow"
+  bundle = "sharedflows/MyFlow/MyFlow.zip"
+  bundle_hash = filebase64sha256("sharedflows/MyFlow/MyFlow.zip")
 }
 ```
 ## Argument Reference

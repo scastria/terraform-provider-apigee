@@ -105,6 +105,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
+	//Do not use id since that can change on update
 	upUser := client.User{
 		EmailId:   d.Get("email_id").(string),
 		FirstName: d.Get("first_name").(string),

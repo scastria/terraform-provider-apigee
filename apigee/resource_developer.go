@@ -130,6 +130,7 @@ func resourceDeveloperUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
+	//Do not use id since that can change on update
 	upDeveloper := client.Developer{
 		Email:     d.Get("email").(string),
 		FirstName: d.Get("first_name").(string),

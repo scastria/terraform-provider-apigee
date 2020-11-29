@@ -241,7 +241,7 @@ func resourceProductUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		approvalType = client.ManualApprovalType
 	}
 	upProduct := client.Product{
-		Name:         d.Get("name").(string),
+		Name:         d.Id(),
 		DisplayName:  d.Get("display_name").(string),
 		ApprovalType: approvalType,
 	}

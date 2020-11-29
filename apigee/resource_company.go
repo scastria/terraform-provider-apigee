@@ -120,7 +120,7 @@ func resourceCompanyUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
 	upCompany := client.Company{
-		Name: d.Get("name").(string),
+		Name: d.Id(),
 	}
 	fillCompany(&upCompany, d)
 	err := json.NewEncoder(&buf).Encode(upCompany)

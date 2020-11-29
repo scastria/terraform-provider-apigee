@@ -57,6 +57,7 @@ func Provider() *schema.Provider {
 			"apigee_developer":              resourceDeveloper(),
 			"apigee_product":                resourceProduct(),
 			"apigee_company":                resourceCompany(),
+			"apigee_company_developer":      resourceCompanyDeveloper(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

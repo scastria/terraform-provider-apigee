@@ -2,15 +2,15 @@
 Represents a proxy's deployment to an environment
 ## Example usage
 ```hcl
-resource "apigee_proxy" "example" {
-  name = "ShawnTest"
-  bundle = "proxies/ShawnTest/ShawnTest.zip"
-  bundle_hash = filebase64sha256("proxies/ShawnTest/ShawnTest.zip")
+resource "apigee_proxy" "MyProxy" {
+  name = "MyProxy"
+  bundle = "proxies/MyProxy/MyProxy.zip"
+  bundle_hash = filebase64sha256("proxies/MyProxy/MyProxy.zip")
 }
-resource "apigee_proxy_deployment" "exampleDeployment" {
-  proxy_name = apigee_proxy.example.name
+resource "apigee_proxy_deployment" "example" {
+  proxy_name = apigee_proxy.MyProxy.name
   environment_name = "dev"
-  revision = apigee_proxy.example.revision
+  revision = apigee_proxy.MyProxy.revision
 }
 ```
 ## Argument Reference
