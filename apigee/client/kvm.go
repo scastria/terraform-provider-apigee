@@ -9,6 +9,9 @@ const (
 	EnvironmentKVMPath          = "o/%s/e/%s/keyvaluemaps"
 	EnvironmentKVMPathGet       = EnvironmentKVMPath + "/%s"
 	EnvironmentKVMPathGetEntry  = EnvironmentKVMPathGet + "/entries/%s"
+	ProxyKVMPath                = "o/%s/apis/%s/keyvaluemaps"
+	ProxyKVMPathGet             = ProxyKVMPath + "/%s"
+	ProxyKVMPathGetEntry        = ProxyKVMPathGet + "/entries/%s"
 	KVMIdSeparator              = ":"
 )
 
@@ -18,6 +21,8 @@ type KVM struct {
 	Entries   []KVMEntry `json:"entry,omitempty"`
 	//Only used for Environment context
 	EnvironmentName string
+	//Only used for Proxy context
+	ProxyName string
 }
 
 type KVMEntry struct {
@@ -30,6 +35,15 @@ func (c *KVM) EnvironmentKVMEncodeId() string {
 }
 
 func EnvironmentKVMDecodeId(s string) (string, string) {
+	tokens := strings.Split(s, KVMIdSeparator)
+	return tokens[0], tokens[1]
+}
+
+func (c *KVM) ProxyKVMEncodeId() string {
+	return c.ProxyName + KVMIdSeparator + c.Name
+}
+
+func ProxyKVMDecodeId(s string) (string, string) {
 	tokens := strings.Split(s, KVMIdSeparator)
 	return tokens[0], tokens[1]
 }
