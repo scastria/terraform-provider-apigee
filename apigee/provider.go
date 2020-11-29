@@ -45,6 +45,7 @@ func Provider() *schema.Provider {
 			"apigee_user_role":              resourceUserRole(),
 			"apigee_role_permission":        resourceRolePermission(),
 			"apigee_cache":                  resourceCache(),
+			"apigee_organization_kvm":       resourceOrganizationKVM(),
 			"apigee_environment_kvm":        resourceEnvironmentKVM(),
 			"apigee_target_server":          resourceTargetServer(),
 			"apigee_virtual_host":           resourceVirtualHost(),

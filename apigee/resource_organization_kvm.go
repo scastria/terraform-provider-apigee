@@ -13,21 +13,16 @@ import (
 	"net/http"
 )
 
-func resourceEnvironmentKVM() *schema.Resource {
+func resourceOrganizationKVM() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceEnvironmentKVMCreate,
-		ReadContext:   resourceEnvironmentKVMRead,
-		UpdateContext: resourceEnvironmentKVMUpdate,
-		DeleteContext: resourceEnvironmentKVMDelete,
+		CreateContext: resourceOrganizationKVMCreate,
+		ReadContext:   resourceOrganizationKVMRead,
+		UpdateContext: resourceOrganizationKVMUpdate,
+		DeleteContext: resourceOrganizationKVMDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"environment_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -46,11 +41,11 @@ func resourceEnvironmentKVM() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: resourceEnvironmentKVMCustomDiff,
+		CustomizeDiff: resourceOrganizationKVMCustomDiff,
 	}
 }
 
-func resourceEnvironmentKVMCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
+func resourceOrganizationKVMCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
 	//A KVM cannot be decrypted so ForceNew if going from true to false
 	if !diff.HasChange("encrypted") {
 		return nil
@@ -62,21 +57,20 @@ func resourceEnvironmentKVMCustomDiff(ctx context.Context, diff *schema.Resource
 	return nil
 }
 
-func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceOrganizationKVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	newEnvironmentKVM := client.KVM{
-		EnvironmentName: d.Get("environment_name").(string),
-		Name:            d.Get("name").(string),
+	newOrganizationKVM := client.KVM{
+		Name: d.Get("name").(string),
 	}
-	fillEnvironmentKVM(&newEnvironmentKVM, d)
-	err := json.NewEncoder(&buf).Encode(newEnvironmentKVM)
+	fillOrganizationKVM(&newOrganizationKVM, d)
+	err := json.NewEncoder(&buf).Encode(newOrganizationKVM)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.EnvironmentKVMPath, c.Organization, newEnvironmentKVM.EnvironmentName)
+	requestPath := fmt.Sprintf(client.OrganizationKVMPath, c.Organization)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
@@ -85,11 +79,11 @@ func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	d.SetId(newEnvironmentKVM.EnvironmentKVMEncodeId())
+	d.SetId(newOrganizationKVM.Name)
 	return diags
 }
 
-func fillEnvironmentKVM(c *client.KVM, d *schema.ResourceData) {
+func fillOrganizationKVM(c *client.KVM, d *schema.ResourceData) {
 	encrypted, ok := d.GetOk("encrypted")
 	if ok {
 		c.Encrypted = encrypted.(bool)
@@ -106,11 +100,10 @@ func fillEnvironmentKVM(c *client.KVM, d *schema.ResourceData) {
 	}
 }
 
-func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceOrganizationKVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, name := client.EnvironmentKVMDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
+	requestPath := fmt.Sprintf(client.OrganizationKVMPathGet, c.Organization, d.Id())
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -126,8 +119,7 @@ func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m i
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	d.Set("environment_name", envName)
-	d.Set("name", name)
+	d.Set("name", d.Id())
 	entries := map[string]string{}
 	for _, e := range retVal.Entries {
 		entries[e.Name] = e.Value
@@ -136,9 +128,8 @@ func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceOrganizationKVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, name := client.EnvironmentKVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	//Check for removal of entries
 	if d.HasChange("entry") {
@@ -151,7 +142,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 				continue
 			}
 			//Delete entry
-			requestPath := fmt.Sprintf(client.EnvironmentKVMPathGetEntry, c.Organization, envName, name, oldKey)
+			requestPath := fmt.Sprintf(client.OrganizationKVMPathGetEntry, c.Organization, d.Id(), oldKey)
 			_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 			if err != nil {
 				return diag.FromErr(err)
@@ -159,16 +150,15 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 	buf := bytes.Buffer{}
-	upEnvironmentKVM := client.KVM{
-		EnvironmentName: envName,
-		Name:            name,
+	upOrganizationKVM := client.KVM{
+		Name: d.Id(),
 	}
-	fillEnvironmentKVM(&upEnvironmentKVM, d)
-	err := json.NewEncoder(&buf).Encode(upEnvironmentKVM)
+	fillOrganizationKVM(&upOrganizationKVM, d)
+	err := json.NewEncoder(&buf).Encode(upOrganizationKVM)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
+	requestPath := fmt.Sprintf(client.OrganizationKVMPathGet, c.Organization, d.Id())
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
@@ -179,11 +169,10 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceEnvironmentKVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceOrganizationKVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, name := client.EnvironmentKVMDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
+	requestPath := fmt.Sprintf(client.OrganizationKVMPathGet, c.Organization, d.Id())
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
