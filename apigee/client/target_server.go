@@ -3,9 +3,8 @@ package client
 import "strings"
 
 const (
-	TargetServerPath        = "o/%s/e/%s/targetservers"
-	TargetServerPathGet     = TargetServerPath + "/%s"
-	TargetServerIdSeparator = ":"
+	TargetServerPath    = "o/%s/e/%s/targetservers"
+	TargetServerPathGet = TargetServerPath + "/%s"
 )
 
 type TargetServer struct {
@@ -22,10 +21,10 @@ type SSL struct {
 }
 
 func (c *TargetServer) TargetServerEncodeId() string {
-	return c.EnvironmentName + TargetServerIdSeparator + c.Name
+	return c.EnvironmentName + IdSeparator + c.Name
 }
 
 func TargetServerDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, TargetServerIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

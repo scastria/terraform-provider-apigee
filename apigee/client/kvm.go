@@ -16,18 +16,13 @@ const (
 )
 
 type KVM struct {
-	Name      string     `json:"name"`
-	Encrypted bool       `json:"encrypted,omitempty"`
-	Entries   []KVMEntry `json:"entry,omitempty"`
+	Name      string      `json:"name"`
+	Encrypted bool        `json:"encrypted,omitempty"`
+	Entries   []Attribute `json:"entry,omitempty"`
 	//Only used for Environment context
 	EnvironmentName string
 	//Only used for Proxy context
 	ProxyName string
-}
-
-type KVMEntry struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
 }
 
 func (c *KVM) EnvironmentKVMEncodeId() string {

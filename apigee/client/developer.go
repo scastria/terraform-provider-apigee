@@ -6,14 +6,9 @@ const (
 )
 
 type Developer struct {
-	Email      string               `json:"email"`
-	FirstName  string               `json:"firstName"`
-	LastName   string               `json:"lastName"`
-	UserName   string               `json:"userName"`
-	Attributes []DeveloperAttribute `json:"attributes,omitempty"`
-}
-
-type DeveloperAttribute struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Email      string      `json:"email"`
+	FirstName  string      `json:"firstName"`
+	LastName   string      `json:"lastName"`
+	UserName   string      `json:"userName"`
+	Attributes []Attribute `json:"attributes,omitempty"`
 }

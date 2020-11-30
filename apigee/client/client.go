@@ -12,6 +12,7 @@ import (
 
 const (
 	FormEncoded = "application/x-www-form-urlencoded"
+	IdSeparator = ":"
 )
 
 type Client struct {

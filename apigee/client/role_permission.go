@@ -5,9 +5,8 @@ import (
 )
 
 const (
-	RolePermissionPath        = "o/%s/userroles/%s/permissions"
-	RolePermissionPathGet     = RolePermissionPath + "/%s"
-	RolePermissionIdSeparator = ":"
+	RolePermissionPath    = "o/%s/userroles/%s/permissions"
+	RolePermissionPathGet = RolePermissionPath + "/%s"
 )
 
 type RolePermission struct {
@@ -17,10 +16,10 @@ type RolePermission struct {
 }
 
 func (rp *RolePermission) RolePermissionEncodeId() string {
-	return rp.RoleName + RolePermissionIdSeparator + rp.Path
+	return rp.RoleName + IdSeparator + rp.Path
 }
 
 func RolePermissionDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, RolePermissionIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

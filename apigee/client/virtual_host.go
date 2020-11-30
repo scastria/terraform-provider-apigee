@@ -3,9 +3,8 @@ package client
 import "strings"
 
 const (
-	VirtualHostPath        = "o/%s/e/%s/virtualhosts"
-	VirtualHostPathGet     = VirtualHostPath + "/%s"
-	VirtualHostIdSeparator = ":"
+	VirtualHostPath    = "o/%s/e/%s/virtualhosts"
+	VirtualHostPathGet = VirtualHostPath + "/%s"
 )
 
 type VirtualHost struct {
@@ -17,10 +16,10 @@ type VirtualHost struct {
 }
 
 func (c *VirtualHost) VirtualHostEncodeId() string {
-	return c.EnvironmentName + VirtualHostIdSeparator + c.Name
+	return c.EnvironmentName + IdSeparator + c.Name
 }
 
 func VirtualHostDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, VirtualHostIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

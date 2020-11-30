@@ -13,17 +13,8 @@ type DeveloperApp struct {
 	DeveloperEmail string
 	Name           string                   `json:"name"`
 	CallbackURL    string                   `json:"callbackUrl"`
-	Attributes     []DeveloperAppAttribute  `json:"attributes,omitempty"`
+	Attributes     []Attribute              `json:"attributes,omitempty"`
 	Credentials    []DeveloperAppCredential `json:"credentials"`
-}
-
-type DeveloperAppAttribute struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-type DeveloperAppCredential struct {
-	ConsumerKey string `json:"consumerKey"`
 }
 
 func (ur *DeveloperApp) DeveloperAppEncodeId() string {

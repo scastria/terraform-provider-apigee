@@ -3,9 +3,8 @@ package client
 import "strings"
 
 const (
-	CompanyDeveloperPath        = "o/%s/companies/%s/developers"
-	CompanyDeveloperPathGet     = CompanyDeveloperPath + "/%s"
-	CompanyDeveloperIdSeparator = ":"
+	CompanyDeveloperPath    = "o/%s/companies/%s/developers"
+	CompanyDeveloperPathGet = CompanyDeveloperPath + "/%s"
 )
 
 type CompanyDeveloper struct {
@@ -19,10 +18,10 @@ type CompanyDeveloperList struct {
 }
 
 func (ur *CompanyDeveloper) CompanyDeveloperEncodeId() string {
-	return ur.CompanyName + CompanyDeveloperIdSeparator + ur.DeveloperEmail
+	return ur.CompanyName + IdSeparator + ur.DeveloperEmail
 }
 
 func CompanyDeveloperDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, CompanyDeveloperIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

@@ -92,7 +92,7 @@ func fillOrganizationKVM(c *client.KVM, d *schema.ResourceData) {
 	if ok {
 		entries := e.(map[string]interface{})
 		for name, value := range entries {
-			c.Entries = append(c.Entries, client.KVMEntry{
+			c.Entries = append(c.Entries, client.Attribute{
 				Name:  name,
 				Value: value.(string),
 			})

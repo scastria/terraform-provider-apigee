@@ -3,9 +3,8 @@ package client
 import "strings"
 
 const (
-	CachePath        = "o/%s/e/%s/caches"
-	CachePathGet     = CachePath + "/%s"
-	CacheIdSeparator = ":"
+	CachePath    = "o/%s/e/%s/caches"
+	CachePathGet = CachePath + "/%s"
 )
 
 type Cache struct {
@@ -28,10 +27,10 @@ type ExpiryValue struct {
 }
 
 func (c *Cache) CacheEncodeId() string {
-	return c.EnvironmentName + CacheIdSeparator + c.Name
+	return c.EnvironmentName + IdSeparator + c.Name
 }
 
 func CacheDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, CacheIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

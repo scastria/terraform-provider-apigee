@@ -103,7 +103,7 @@ func fillDeveloperApp(c *client.DeveloperApp, d *schema.ResourceData) {
 	if ok {
 		attributes := a.(map[string]interface{})
 		for name, value := range attributes {
-			c.Attributes = append(c.Attributes, client.DeveloperAppAttribute{
+			c.Attributes = append(c.Attributes, client.Attribute{
 				Name:  name,
 				Value: value.(string),
 			})
