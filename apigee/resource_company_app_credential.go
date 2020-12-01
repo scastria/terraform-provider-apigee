@@ -8,30 +8,27 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
-	"regexp"
 )
 
-func resourceDeveloperAppCredential() *schema.Resource {
+func resourceCompanyAppCredential() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceDeveloperAppCredentialCreate,
-		ReadContext:   resourceDeveloperAppCredentialRead,
-		UpdateContext: resourceDeveloperAppCredentialUpdate,
-		DeleteContext: resourceDeveloperAppCredentialDelete,
+		CreateContext: resourceCompanyAppCredentialCreate,
+		ReadContext:   resourceCompanyAppCredentialRead,
+		UpdateContext: resourceCompanyAppCredentialUpdate,
+		DeleteContext: resourceCompanyAppCredentialDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"developer_email": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`), "must be a valid email address"),
+			"company_name": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
-			"developer_app_name": {
+			"company_app_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -72,23 +69,23 @@ func resourceDeveloperAppCredential() *schema.Resource {
 	}
 }
 
-func resourceDeveloperAppCredentialCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppCredentialCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	newDeveloperAppCredential := client.AppCredentialModify{
-		DeveloperEmail: d.Get("developer_email").(string),
-		AppName:        d.Get("developer_app_name").(string),
+	newCompanyAppCredential := client.AppCredentialModify{
+		CompanyName:    d.Get("company_name").(string),
+		AppName:        d.Get("company_app_name").(string),
 		ConsumerKey:    d.Get("consumer_key").(string),
 		ConsumerSecret: d.Get("consumer_secret").(string),
 	}
-	fillDeveloperAppCredential(&newDeveloperAppCredential, d)
-	err := json.NewEncoder(&buf).Encode(newDeveloperAppCredential)
+	fillCompanyAppCredential(&newCompanyAppCredential, d)
+	err := json.NewEncoder(&buf).Encode(newCompanyAppCredential)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathCreate, c.Organization, newDeveloperAppCredential.DeveloperEmail, newDeveloperAppCredential.AppName)
+	requestPath := fmt.Sprintf(client.CompanyAppCredentialPathCreate, c.Organization, newCompanyAppCredential.CompanyName, newCompanyAppCredential.AppName)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
@@ -98,11 +95,11 @@ func resourceDeveloperAppCredentialCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 	//Set id before adding products
-	d.SetId(newDeveloperAppCredential.DeveloperAppCredentialEncodeId())
+	d.SetId(newCompanyAppCredential.CompanyAppCredentialEncodeId())
 	//Add any products or attributes with POST
-	requestPath = fmt.Sprintf(client.DeveloperAppCredentialPathGet, c.Organization, newDeveloperAppCredential.DeveloperEmail, newDeveloperAppCredential.AppName, newDeveloperAppCredential.ConsumerKey)
+	requestPath = fmt.Sprintf(client.CompanyAppCredentialPathGet, c.Organization, newCompanyAppCredential.CompanyName, newCompanyAppCredential.AppName, newCompanyAppCredential.ConsumerKey)
 	buf = bytes.Buffer{}
-	err = json.NewEncoder(&buf).Encode(newDeveloperAppCredential)
+	err = json.NewEncoder(&buf).Encode(newCompanyAppCredential)
 	if err != nil {
 		//Don't clear id since credential was created
 		return diag.FromErr(err)
@@ -114,7 +111,7 @@ func resourceDeveloperAppCredentialCreate(ctx context.Context, d *schema.Resourc
 	}
 	//Add any scopes with PUT
 	buf = bytes.Buffer{}
-	err = json.NewEncoder(&buf).Encode(newDeveloperAppCredential)
+	err = json.NewEncoder(&buf).Encode(newCompanyAppCredential)
 	if err != nil {
 		//Don't clear id since credential was created
 		return diag.FromErr(err)
@@ -127,7 +124,7 @@ func resourceDeveloperAppCredentialCreate(ctx context.Context, d *schema.Resourc
 	return diags
 }
 
-func fillDeveloperAppCredential(c *client.AppCredentialModify, d *schema.ResourceData) {
+func fillCompanyAppCredential(c *client.AppCredentialModify, d *schema.ResourceData) {
 	apiProducts, ok := d.GetOk("api_products")
 	if ok {
 		set := apiProducts.(*schema.Set)
@@ -150,11 +147,11 @@ func fillDeveloperAppCredential(c *client.AppCredentialModify, d *schema.Resourc
 	}
 }
 
-func resourceDeveloperAppCredentialRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppCredentialRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	developerEmail, appName, key := client.AppCredentialDecodeId(d.Id())
+	companyName, appName, key := client.AppCredentialDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathGet, c.Organization, developerEmail, appName, key)
+	requestPath := fmt.Sprintf(client.CompanyAppCredentialPathGet, c.Organization, companyName, appName, key)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -170,8 +167,8 @@ func resourceDeveloperAppCredentialRead(ctx context.Context, d *schema.ResourceD
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	d.Set("developer_email", developerEmail)
-	d.Set("developer_app_name", appName)
+	d.Set("company_name", companyName)
+	d.Set("company_app_name", appName)
 	d.Set("consumer_key", key)
 	d.Set("consumer_secret", retVal.ConsumerSecret)
 	var apiProducts []string
@@ -188,9 +185,9 @@ func resourceDeveloperAppCredentialRead(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func resourceDeveloperAppCredentialUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppCredentialUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	developerEmail, appName, key := client.AppCredentialDecodeId(d.Id())
+	companyName, appName, key := client.AppCredentialDecodeId(d.Id())
 	c := m.(*client.Client)
 	//Check for removal of products
 	if d.HasChange("api_products") {
@@ -203,7 +200,7 @@ func resourceDeveloperAppCredentialUpdate(ctx context.Context, d *schema.Resourc
 				continue
 			}
 			//Delete product
-			requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathProduct, c.Organization, developerEmail, appName, key, oldProd)
+			requestPath := fmt.Sprintf(client.CompanyAppCredentialPathProduct, c.Organization, companyName, appName, key, oldProd)
 			_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 			if err != nil {
 				return diag.FromErr(err)
@@ -211,19 +208,19 @@ func resourceDeveloperAppCredentialUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 	buf := bytes.Buffer{}
-	upDeveloperAppCredential := client.AppCredentialModify{
-		DeveloperEmail: developerEmail,
+	upCompanyAppCredential := client.AppCredentialModify{
+		CompanyName:    companyName,
 		AppName:        appName,
 		ConsumerKey:    key,
 		ConsumerSecret: d.Get("consumer_secret").(string),
 	}
-	fillDeveloperAppCredential(&upDeveloperAppCredential, d)
+	fillCompanyAppCredential(&upCompanyAppCredential, d)
 	//Handle products and attributes with POST
-	err := json.NewEncoder(&buf).Encode(upDeveloperAppCredential)
+	err := json.NewEncoder(&buf).Encode(upCompanyAppCredential)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathGet, c.Organization, developerEmail, appName, key)
+	requestPath := fmt.Sprintf(client.CompanyAppCredentialPathGet, c.Organization, companyName, appName, key)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
@@ -233,7 +230,7 @@ func resourceDeveloperAppCredentialUpdate(ctx context.Context, d *schema.Resourc
 	}
 	//Handle scopes with PUT
 	buf = bytes.Buffer{}
-	err = json.NewEncoder(&buf).Encode(upDeveloperAppCredential)
+	err = json.NewEncoder(&buf).Encode(upCompanyAppCredential)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,11 +241,11 @@ func resourceDeveloperAppCredentialUpdate(ctx context.Context, d *schema.Resourc
 	return diags
 }
 
-func resourceDeveloperAppCredentialDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppCredentialDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	developerEmail, appName, key := client.AppCredentialDecodeId(d.Id())
+	companyName, appName, key := client.AppCredentialDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathGet, c.Organization, developerEmail, appName, key)
+	requestPath := fmt.Sprintf(client.CompanyAppCredentialPathGet, c.Organization, companyName, appName, key)
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)

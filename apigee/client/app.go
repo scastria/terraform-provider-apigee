@@ -12,10 +12,10 @@ const (
 )
 
 type App struct {
-	Name        string                   `json:"name"`
-	CallbackURL string                   `json:"callbackUrl"`
-	Attributes  []Attribute              `json:"attributes,omitempty"`
-	Credentials []DeveloperAppCredential `json:"credentials"`
+	Name        string          `json:"name"`
+	CallbackURL string          `json:"callbackUrl"`
+	Attributes  []Attribute     `json:"attributes,omitempty"`
+	Credentials []AppCredential `json:"credentials"`
 	//Only used for developer context
 	DeveloperEmail string
 	//Only used for company context
