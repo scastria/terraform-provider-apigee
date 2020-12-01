@@ -1,3 +1,6 @@
+---
+subcategory: "Publish"
+---
 # Resource: apigee_company_app
 Represents an app belonging to a company
 ## Example usage

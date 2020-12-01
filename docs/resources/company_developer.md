@@ -1,3 +1,6 @@
+---
+subcategory: "Publish"
+---
 # Resource: apigee_company_developer
 Represents a developer belonging to a company
 ## Example usage

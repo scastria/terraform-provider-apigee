@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_target_server
 Represents a named target server in an environment
 ## Example usage

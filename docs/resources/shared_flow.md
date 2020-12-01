@@ -1,3 +1,6 @@
+---
+subcategory: "Develop"
+---
 # Resource: apigee_shared_flow
 Represents a shared flow's latest revision
 ## Example usage

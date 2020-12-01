@@ -1,3 +1,6 @@
+---
+subcategory: "Publish"
+---
 # Resource: apigee_developer
 Represents a developer
 ## Example usage

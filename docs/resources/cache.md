@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_cache
 Represents a cache in an environment
 ## Example usage

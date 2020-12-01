@@ -1,3 +1,6 @@
+---
+subcategory: "Publish"
+---
 # Resource: apigee_developer_app
 Represents an app belonging to a developer
 ## Example usage

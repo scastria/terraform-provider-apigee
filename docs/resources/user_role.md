@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_user_role
 Represents a user assigned to a role
 ## Example usage

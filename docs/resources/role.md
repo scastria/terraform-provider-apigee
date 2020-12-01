@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_role
 Represents a role
 ## Example usage

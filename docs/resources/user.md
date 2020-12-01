@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_user
 Represents a user
 ## Example usage

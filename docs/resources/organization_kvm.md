@@ -1,9 +1,11 @@
-# Resource: apigee_environment_kvm
-Represents a kvm in an environment
+---
+subcategory: "Admin"
+---
+# Resource: apigee_organization_kvm
+Represents a kvm in an organization
 ## Example usage
 ```hcl
-resource "apigee_environment_kvm" "example" {
-  environment_name = "dev"
+resource "apigee_organization_kvm" "example" {
   name = "LookupValues"
   entry = {
     first = "firstValue"
@@ -12,11 +14,10 @@ resource "apigee_environment_kvm" "example" {
 }
 ```
 ## Argument Reference
-* `environment_name` - **(Required, ForceNew, String)** The name of an environment
 * `name` - **(Required, ForceNew, String)** The name of the cache
 * `encrypted` - **(Optional, Boolean)** Determine whether to encrypt the values within the kvm.  Changing this value from `true` to `false` will cause ForceNew since Apigee will not decrypt values. 
 * `entry` - **(Optional, Map of String to String)** Keys and values to be stored within the kvm.
 ## Attribute Reference
-* `id` - Same as `environment_name`:`name`
+* `id` - Same as `name`
 ## Import
-Environment KVMs can be imported using a proper value of `id` as described above
+Organization KVMs can be imported using a proper value of `id` as described above

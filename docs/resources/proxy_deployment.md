@@ -1,3 +1,6 @@
+---
+subcategory: "Develop"
+---
 # Resource: apigee_proxy_deployment
 Represents a proxy's deployment to an environment
 ## Example usage

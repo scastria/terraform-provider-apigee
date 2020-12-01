@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_virtual_host
 Represents a virtual host in an environment
 ## Example usage

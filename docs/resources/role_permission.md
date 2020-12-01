@@ -1,3 +1,6 @@
+---
+subcategory: "Admin"
+---
 # Resource: apigee_role_permission
 Represents a permission assigned to a role
 ## Example usage

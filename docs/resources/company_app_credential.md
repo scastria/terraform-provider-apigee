@@ -1,3 +1,6 @@
+---
+subcategory: "Publish"
+---
 # Resource: apigee_company_app_credential
 Represents a credential belonging to a company app
 ## Example usage

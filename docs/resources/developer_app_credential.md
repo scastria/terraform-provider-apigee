@@ -1,3 +1,6 @@
+---
+subcategory: "Publish"
+---
 # Resource: apigee_developer_app_credential
 Represents a credential belonging to a developer app
 ## Example usage

@@ -1,3 +1,6 @@
+---
+subcategory: "Develop"
+---
 # Resource: apigee_proxy
 Represents a proxy's latest revision
 ## Example usage

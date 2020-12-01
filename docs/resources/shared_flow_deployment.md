@@ -1,3 +1,6 @@
+---
+subcategory: "Develop"
+---
 # Resource: apigee_shared_flow_deployment
 Represents a shared flow's deployment to an environment
 ## Example usage
