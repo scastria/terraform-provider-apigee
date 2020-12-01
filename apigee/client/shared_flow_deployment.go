@@ -5,7 +5,6 @@ import "strings"
 const (
 	SharedFlowDeploymentPath         = "o/%s/e/%s/sharedflows/%s/deployments"
 	SharedFlowDeploymentRevisionPath = "o/%s/e/%s/sharedflows/%s/revisions/%d/deployments"
-	SharedFlowDeploymentIdSeparator  = ":"
 )
 
 type SharedFlowDeployment struct {
@@ -19,10 +18,10 @@ type SharedFlowRevisionDeployment struct {
 }
 
 func (c *SharedFlowDeployment) SharedFlowDeploymentEncodeId() string {
-	return c.EnvironmentName + SharedFlowDeploymentIdSeparator + c.SharedFlowName
+	return c.EnvironmentName + IdSeparator + c.SharedFlowName
 }
 
 func SharedFlowDeploymentDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, SharedFlowDeploymentIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

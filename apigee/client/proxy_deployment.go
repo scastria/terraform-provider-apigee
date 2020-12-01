@@ -5,7 +5,6 @@ import "strings"
 const (
 	ProxyDeploymentPath         = "o/%s/e/%s/apis/%s/deployments"
 	ProxyDeploymentRevisionPath = "o/%s/e/%s/apis/%s/revisions/%d/deployments"
-	ProxyDeploymentIdSeparator  = ":"
 )
 
 type ProxyDeployment struct {
@@ -19,10 +18,10 @@ type ProxyRevisionDeployment struct {
 }
 
 func (c *ProxyDeployment) ProxyDeploymentEncodeId() string {
-	return c.EnvironmentName + ProxyDeploymentIdSeparator + c.ProxyName
+	return c.EnvironmentName + IdSeparator + c.ProxyName
 }
 
 func ProxyDeploymentDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, ProxyDeploymentIdSeparator)
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

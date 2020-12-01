@@ -108,7 +108,7 @@ func fillEnvironmentKVM(c *client.KVM, d *schema.ResourceData) {
 
 func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, name := client.EnvironmentKVMDecodeId(d.Id())
+	envName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
@@ -138,7 +138,7 @@ func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m i
 
 func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, name := client.EnvironmentKVMDecodeId(d.Id())
+	envName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	//Check for removal of entries
 	if d.HasChange("entry") {
@@ -181,7 +181,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceEnvironmentKVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	envName, name := client.EnvironmentKVMDecodeId(d.Id())
+	envName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})

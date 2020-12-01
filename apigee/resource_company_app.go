@@ -8,28 +8,25 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"mime"
 	"net/http"
-	"regexp"
 )
 
-func resourceDeveloperApp() *schema.Resource {
+func resourceCompanyApp() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceDeveloperAppCreate,
-		ReadContext:   resourceDeveloperAppRead,
-		UpdateContext: resourceDeveloperAppUpdate,
-		DeleteContext: resourceDeveloperAppDelete,
+		CreateContext: resourceCompanyAppCreate,
+		ReadContext:   resourceCompanyAppRead,
+		UpdateContext: resourceCompanyAppUpdate,
+		DeleteContext: resourceCompanyAppDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"developer_email": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`), "must be a valid email address"),
+			"company_name": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
@@ -51,21 +48,21 @@ func resourceDeveloperApp() *schema.Resource {
 	}
 }
 
-func resourceDeveloperAppCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	newDeveloperApp := client.App{
-		DeveloperEmail: d.Get("developer_email").(string),
-		Name:           d.Get("name").(string),
+	newCompanyApp := client.App{
+		CompanyName: d.Get("company_name").(string),
+		Name:        d.Get("name").(string),
 	}
-	fillDeveloperApp(&newDeveloperApp, d)
-	err := json.NewEncoder(&buf).Encode(newDeveloperApp)
+	fillCompanyApp(&newCompanyApp, d)
+	err := json.NewEncoder(&buf).Encode(newCompanyApp)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.DeveloperAppPath, c.Organization, newDeveloperApp.DeveloperEmail)
+	requestPath := fmt.Sprintf(client.CompanyAppPath, c.Organization, newCompanyApp.CompanyName)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
@@ -75,7 +72,7 @@ func resourceDeveloperAppCreate(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 	//Set id before decoding to get generated key for deletion
-	d.SetId(newDeveloperApp.DeveloperAppEncodeId())
+	d.SetId(newCompanyApp.CompanyAppEncodeId())
 	retVal := &client.App{}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
@@ -84,7 +81,7 @@ func resourceDeveloperAppCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 	//Delete generated keys so that user is in control of keys via Terraform
 	for _, key := range retVal.Credentials {
-		requestPath = fmt.Sprintf(client.DeveloperAppPathGeneratedKey, c.Organization, newDeveloperApp.DeveloperEmail, newDeveloperApp.Name, key.ConsumerKey)
+		requestPath = fmt.Sprintf(client.CompanyAppPathGeneratedKey, c.Organization, newCompanyApp.CompanyName, newCompanyApp.Name, key.ConsumerKey)
 		_, err = c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 		if err != nil {
 			//Don't clear id since app was created
@@ -94,7 +91,7 @@ func resourceDeveloperAppCreate(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func fillDeveloperApp(c *client.App, d *schema.ResourceData) {
+func fillCompanyApp(c *client.App, d *schema.ResourceData) {
 	callback, ok := d.GetOk("callback_url")
 	if ok {
 		c.CallbackURL = callback.(string)
@@ -111,11 +108,11 @@ func fillDeveloperApp(c *client.App, d *schema.ResourceData) {
 	}
 }
 
-func resourceDeveloperAppRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	developerEmail, name := client.AppDecodeId(d.Id())
+	companyName, name := client.AppDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.DeveloperAppPathGet, c.Organization, developerEmail, name)
+	requestPath := fmt.Sprintf(client.CompanyAppPathGet, c.Organization, companyName, name)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -131,7 +128,7 @@ func resourceDeveloperAppRead(ctx context.Context, d *schema.ResourceData, m int
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	d.Set("developer_email", developerEmail)
+	d.Set("company_name", companyName)
 	d.Set("name", name)
 	d.Set("callback_url", retVal.CallbackURL)
 	atts := map[string]string{}
@@ -142,21 +139,21 @@ func resourceDeveloperAppRead(ctx context.Context, d *schema.ResourceData, m int
 	return diags
 }
 
-func resourceDeveloperAppUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	developerEmail, name := client.AppDecodeId(d.Id())
+	companyName, name := client.AppDecodeId(d.Id())
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	upDeveloperApp := client.App{
-		DeveloperEmail: developerEmail,
-		Name:           name,
+	upCompanyApp := client.App{
+		CompanyName: companyName,
+		Name:        name,
 	}
-	fillDeveloperApp(&upDeveloperApp, d)
-	err := json.NewEncoder(&buf).Encode(upDeveloperApp)
+	fillCompanyApp(&upCompanyApp, d)
+	err := json.NewEncoder(&buf).Encode(upCompanyApp)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.DeveloperAppPathGet, c.Organization, developerEmail, name)
+	requestPath := fmt.Sprintf(client.CompanyAppPathGet, c.Organization, companyName, name)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
@@ -167,11 +164,11 @@ func resourceDeveloperAppUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func resourceDeveloperAppDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceCompanyAppDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	developerEmail, name := client.AppDecodeId(d.Id())
+	companyName, name := client.AppDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.DeveloperAppPathGet, c.Organization, developerEmail, name)
+	requestPath := fmt.Sprintf(client.CompanyAppPathGet, c.Organization, companyName, name)
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)

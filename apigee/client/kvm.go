@@ -12,7 +12,6 @@ const (
 	ProxyKVMPath                = "o/%s/apis/%s/keyvaluemaps"
 	ProxyKVMPathGet             = ProxyKVMPath + "/%s"
 	ProxyKVMPathGetEntry        = ProxyKVMPathGet + "/entries/%s"
-	KVMIdSeparator              = ":"
 )
 
 type KVM struct {
@@ -26,19 +25,14 @@ type KVM struct {
 }
 
 func (c *KVM) EnvironmentKVMEncodeId() string {
-	return c.EnvironmentName + KVMIdSeparator + c.Name
-}
-
-func EnvironmentKVMDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, KVMIdSeparator)
-	return tokens[0], tokens[1]
+	return c.EnvironmentName + IdSeparator + c.Name
 }
 
 func (c *KVM) ProxyKVMEncodeId() string {
-	return c.ProxyName + KVMIdSeparator + c.Name
+	return c.ProxyName + IdSeparator + c.Name
 }
 
-func ProxyKVMDecodeId(s string) (string, string) {
-	tokens := strings.Split(s, KVMIdSeparator)
+func KVMDecodeId(s string) (string, string) {
+	tokens := strings.Split(s, IdSeparator)
 	return tokens[0], tokens[1]
 }

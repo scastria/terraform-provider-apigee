@@ -21,7 +21,7 @@ resource "apigee_developer_app" "example" {
 }
 ```
 ## Argument Reference
-* `developer_email` - **(Required, ForceNew, String)** The email address of a developer. Can be changed to rename developer.
+* `developer_email` - **(Required, ForceNew, String)** The email address of a developer.
 * `name` - **(Required, ForceNew, String)** The name of the app.
 * `callback_url` - **(Optional, String)** The callback URL of the app used in OAuth 2.0 authorization code flows.
 * `attributes` - **(Optional, Map of String to String)** Keys and values to be stored as custom attributes of the app.

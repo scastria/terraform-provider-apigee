@@ -108,7 +108,7 @@ func fillProxyKVM(c *client.KVM, d *schema.ResourceData) {
 
 func resourceProxyKVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	proxyName, name := client.ProxyKVMDecodeId(d.Id())
+	proxyName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.ProxyKVMPathGet, c.Organization, proxyName, name)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
@@ -138,7 +138,7 @@ func resourceProxyKVMRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 func resourceProxyKVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	proxyName, name := client.ProxyKVMDecodeId(d.Id())
+	proxyName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	//Check for removal of entries
 	if d.HasChange("entry") {
@@ -181,7 +181,7 @@ func resourceProxyKVMUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 func resourceProxyKVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	proxyName, name := client.ProxyKVMDecodeId(d.Id())
+	proxyName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.ProxyKVMPathGet, c.Organization, proxyName, name)
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})

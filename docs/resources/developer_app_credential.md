@@ -54,7 +54,7 @@ resource "apigee_developer_app_credential" "example" {
 }
 ```
 ## Argument Reference
-* `developer_email` - **(Required, ForceNew, String)** The email address of a developer. Can be changed to rename developer.
+* `developer_email` - **(Required, ForceNew, String)** The email address of a developer.
 * `developer_app_name` - **(Required, ForceNew, String)** The name of a developer app.
 * `consumer_key` - **(Required, ForceNew, String)** The key of credential.
 * `consumer_secret` - **(Required, ForceNew, String)** The secret of credential.
