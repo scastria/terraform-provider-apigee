@@ -16,6 +16,7 @@ terraform {
 provider "apigee" {
   username = "me@company.com"
   password = "XXXX"
+//  access_token = "Use access token instead of username/password"
   server = "api.enterprise.apigee.com"
   organization = "ZZZZ"
 }
@@ -32,6 +33,7 @@ provider "apigee" {
   version = "~> 0.1.0"
   username = "me@company.com"
   password = "XXXX"
+//  access_token = "Use access token instead of username/password"
   server = "api.enterprise.apigee.com"
   organization = "ZZZZ"
 }
@@ -42,8 +44,9 @@ resource "apigee_role" "example" {
 }
 ```
 ## Argument Reference
-* `username` - **(Required, String)** The username that will invoke all Apigee API commands. Basic Authentication. Can be specified via env variable `APIGEE_USERNAME`.
-* `password` - **(Required, String)** The password of the username. Basic Authentication. Can be specified via env variable `APIGEE_PASSWORD`.
+* `username` - **(Optional, String)** The username that will invoke all Apigee API commands. Basic Authentication. Can be specified via env variable `APIGEE_USERNAME`.
+* `password` - **(Optional, String)** The password of the username. Basic Authentication. Can be specified via env variable `APIGEE_PASSWORD`.
+* `access_token` - **(Optional, String)** The access token from SAML or OAUTH authentication that can be used instead of `username` and `password`. Token Authentication. Can be specified via env variable `APIGEE_ACCESS_TOKEN`.
 * `server` - **(Required, String)** The hostname of the Apigee Management API server. Can be specified via env variable `APIGEE_SERVER`.
 * `port` - **(Optional, Integer)** The port to use for the server. Default: 443. Can be specified via env variable `APIGEE_PORT`.
 * `organization` - **(Required, String)** The Apigee org that all Apigee API commands will work within. Can be specified via env variable `APIGEE_ORGANIZATION`.

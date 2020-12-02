@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-http-utils/headers"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,21 +14,24 @@ import (
 const (
 	FormEncoded = "application/x-www-form-urlencoded"
 	IdSeparator = ":"
+	Bearer      = "Bearer"
 )
 
 type Client struct {
 	username     string
 	password     string
+	accessToken  string
 	server       string
 	port         int
 	Organization string
 	httpClient   *http.Client
 }
 
-func NewClient(username string, password string, server string, port int, organization string) *Client {
+func NewClient(username string, password string, accessToken string, server string, port int, organization string) *Client {
 	return &Client{
 		username:     username,
 		password:     password,
+		accessToken:  accessToken,
 		server:       server,
 		port:         port,
 		Organization: organization,
@@ -40,7 +44,7 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 	if err != nil {
 		return nil, &RequestError{StatusCode: http.StatusInternalServerError, Err: err}
 	}
-	req.SetBasicAuth(c.username, c.password)
+	//Handle query values
 	if query != nil {
 		requestQuery := req.URL.Query()
 		for key, values := range query {
@@ -50,12 +54,19 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 		}
 		req.URL.RawQuery = requestQuery.Encode()
 	}
+	//Handle header values
 	if headerMap != nil {
 		for key, values := range headerMap {
 			for _, value := range values {
 				req.Header.Add(key, value)
 			}
 		}
+	}
+	//Handle authentication
+	if c.accessToken != "" {
+		req.Header.Set(headers.Authorization, Bearer+" "+c.accessToken)
+	} else {
+		req.SetBasicAuth(c.username, c.password)
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

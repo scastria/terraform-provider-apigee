@@ -12,15 +12,26 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("APIGEE_USERNAME", nil),
+				Type:          schema.TypeString,
+				Optional:      true,
+				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_USERNAME", nil),
+				ConflictsWith: []string{"access_token"},
+				RequiredWith:  []string{"password"},
 			},
 			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("APIGEE_PASSWORD", nil),
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_PASSWORD", nil),
+				ConflictsWith: []string{"access_token"},
+				RequiredWith:  []string{"username"},
+			},
+			"access_token": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_ACCESS_TOKEN", nil),
+				ConflictsWith: []string{"username", "password"},
 			},
 			"server": {
 				Type:        schema.TypeString,
@@ -73,10 +84,16 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
+	accessToken := d.Get("access_token").(string)
 	server := d.Get("server").(string)
 	port := d.Get("port").(int)
 	organization := d.Get("organization").(string)
 
+	//Check for valid authentication
+	if (username == "") && (password == "") && (accessToken == "") {
+		return nil, diag.Errorf("You must specify either username/password for Basic Authentication or access_token")
+	}
+
 	var diags diag.Diagnostics
-	return client.NewClient(username, password, server, port, organization), diags
+	return client.NewClient(username, password, accessToken, server, port, organization), diags
 }
