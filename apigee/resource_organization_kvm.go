@@ -140,7 +140,7 @@ func resourceOrganizationKVMUpdate(ctx context.Context, d *schema.ResourceData, 
 		headers.ContentType: []string{mime.TypeByExtension(".json")},
 	}
 	//Public Apigee requires entries to be added/changed individually
-	if !c.Private {
+	if c.IsPublic() {
 		//Check for addition/modification of entries
 		for newKey, _ := range newE {
 			_, oldHasKey := oldE[newKey]

@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	FormEncoded = "application/x-www-form-urlencoded"
-	IdSeparator = ":"
-	Bearer      = "Bearer"
+	FormEncoded        = "application/x-www-form-urlencoded"
+	IdSeparator        = ":"
+	Bearer             = "Bearer"
+	PublicApigeeServer = "api.enterprise.apigee.com"
 )
 
 type Client struct {
@@ -22,23 +23,25 @@ type Client struct {
 	password     string
 	accessToken  string
 	server       string
-	Private      bool
 	port         int
 	Organization string
 	httpClient   *http.Client
 }
 
-func NewClient(username string, password string, accessToken string, server string, private bool, port int, organization string) *Client {
+func NewClient(username string, password string, accessToken string, server string, port int, organization string) *Client {
 	return &Client{
 		username:     username,
 		password:     password,
 		accessToken:  accessToken,
 		server:       server,
-		Private:      private,
 		port:         port,
 		Organization: organization,
 		httpClient:   &http.Client{},
 	}
+}
+
+func (c *Client) IsPublic() bool {
+	return c.server == PublicApigeeServer
 }
 
 func (c *Client) HttpRequest(method string, path string, query url.Values, headerMap http.Header, body *bytes.Buffer) (closer io.ReadCloser, err error) {
