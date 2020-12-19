@@ -8,6 +8,10 @@ import (
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 )
 
+const (
+	PublicApigeeServer = "api.enterprise.apigee.com"
+)
+
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -36,11 +40,16 @@ func Provider() *schema.Provider {
 			"server": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("APIGEE_SERVER", nil),
+				DefaultFunc: schema.EnvDefaultFunc("APIGEE_SERVER", PublicApigeeServer),
+			},
+			"private": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("APIGEE_PRIVATE", false),
 			},
 			"port": {
 				Type:         schema.TypeInt,
-				Optional:     true,
+				Required:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("APIGEE_PORT", 443),
 				ValidateFunc: validation.IntBetween(0, 65535),
 			},
@@ -86,6 +95,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	password := d.Get("password").(string)
 	accessToken := d.Get("access_token").(string)
 	server := d.Get("server").(string)
+	private := d.Get("private").(bool)
 	port := d.Get("port").(int)
 	organization := d.Get("organization").(string)
 
@@ -95,5 +105,5 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	var diags diag.Diagnostics
-	return client.NewClient(username, password, accessToken, server, port, organization), diags
+	return client.NewClient(username, password, accessToken, server, private, port, organization), diags
 }

@@ -36,6 +36,7 @@ func resourceProxyKVM() *schema.Resource {
 			"encrypted": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 			"entry": {
 				Type:     schema.TypeMap,
@@ -46,20 +47,7 @@ func resourceProxyKVM() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: resourceProxyKVMCustomDiff,
 	}
-}
-
-func resourceProxyKVMCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
-	//A KVM cannot be decrypted so ForceNew if going from true to false
-	if !diff.HasChange("encrypted") {
-		return nil
-	}
-	o, n := diff.GetChange("encrypted")
-	if o.(bool) && !n.(bool) {
-		diff.ForceNew("encrypted")
-	}
-	return nil
 }
 
 func resourceProxyKVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -140,41 +128,77 @@ func resourceProxyKVMUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	var diags diag.Diagnostics
 	proxyName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
+	//All other properties besides entries are ForceNew so just handle entries here
 	//Check for removal of entries
-	if d.HasChange("entry") {
-		o, n := d.GetChange("entry")
-		oldE := o.(map[string]interface{})
-		newE := n.(map[string]interface{})
-		for oldKey, _ := range oldE {
-			_, newHasKey := newE[oldKey]
-			if newHasKey {
-				continue
+	o, n := d.GetChange("entry")
+	oldE := o.(map[string]interface{})
+	newE := n.(map[string]interface{})
+	for oldKey, _ := range oldE {
+		_, newHasKey := newE[oldKey]
+		if newHasKey {
+			continue
+		}
+		//Delete entry
+		requestPath := fmt.Sprintf(client.ProxyKVMPathEntriesGet, c.Organization, proxyName, name, oldKey)
+		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	requestHeaders := http.Header{
+		headers.ContentType: []string{mime.TypeByExtension(".json")},
+	}
+	//Public Apigee requires entries to be added/changed individually
+	if !c.Private {
+		//Check for addition/modification of entries
+		for newKey, _ := range newE {
+			_, oldHasKey := oldE[newKey]
+			newOrModValue := newE[newKey].(string)
+			//Skip if change with same value
+			if oldHasKey {
+				oldValue := oldE[newKey].(string)
+				if oldValue == newOrModValue {
+					continue
+				}
 			}
-			//Delete entry
-			requestPath := fmt.Sprintf(client.ProxyKVMPathGetEntry, c.Organization, proxyName, name, oldKey)
-			_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+			buf := bytes.Buffer{}
+			newOrModEntry := client.Attribute{
+				Name:  newKey,
+				Value: newOrModValue,
+			}
+			err := json.NewEncoder(&buf).Encode(newOrModEntry)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			requestPath := ""
+			if oldHasKey {
+				//Change entry
+				requestPath = fmt.Sprintf(client.ProxyKVMPathEntriesGet, c.Organization, proxyName, name, newKey)
+			} else {
+				//Add entry
+				requestPath = fmt.Sprintf(client.ProxyKVMPathEntries, c.Organization, proxyName, name)
+			}
+			_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
-	}
-	buf := bytes.Buffer{}
-	upProxyKVM := client.KVM{
-		ProxyName: proxyName,
-		Name:      name,
-	}
-	fillProxyKVM(&upProxyKVM, d)
-	err := json.NewEncoder(&buf).Encode(upProxyKVM)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	requestPath := fmt.Sprintf(client.ProxyKVMPathGet, c.Organization, proxyName, name)
-	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
-	}
-	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
-	if err != nil {
-		return diag.FromErr(err)
+	} else {
+		buf := bytes.Buffer{}
+		upProxyKVM := client.KVM{
+			ProxyName: proxyName,
+			Name:      name,
+		}
+		fillProxyKVM(&upProxyKVM, d)
+		err := json.NewEncoder(&buf).Encode(upProxyKVM)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		requestPath := fmt.Sprintf(client.ProxyKVMPathGet, c.Organization, proxyName, name)
+		_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return diags
 }

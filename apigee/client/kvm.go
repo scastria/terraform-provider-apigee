@@ -3,15 +3,18 @@ package client
 import "strings"
 
 const (
-	OrganizationKVMPath         = "o/%s/keyvaluemaps"
-	OrganizationKVMPathGet      = OrganizationKVMPath + "/%s"
-	OrganizationKVMPathGetEntry = OrganizationKVMPathGet + "/entries/%s"
-	EnvironmentKVMPath          = "o/%s/e/%s/keyvaluemaps"
-	EnvironmentKVMPathGet       = EnvironmentKVMPath + "/%s"
-	EnvironmentKVMPathGetEntry  = EnvironmentKVMPathGet + "/entries/%s"
-	ProxyKVMPath                = "o/%s/apis/%s/keyvaluemaps"
-	ProxyKVMPathGet             = ProxyKVMPath + "/%s"
-	ProxyKVMPathGetEntry        = ProxyKVMPathGet + "/entries/%s"
+	OrganizationKVMPath           = "o/%s/keyvaluemaps"
+	OrganizationKVMPathGet        = OrganizationKVMPath + "/%s"
+	OrganizationKVMPathEntries    = OrganizationKVMPathGet + "/entries"
+	OrganizationKVMPathEntriesGet = OrganizationKVMPathEntries + "/%s"
+	EnvironmentKVMPath            = "o/%s/e/%s/keyvaluemaps"
+	EnvironmentKVMPathGet         = EnvironmentKVMPath + "/%s"
+	EnvironmentKVMPathEntries     = EnvironmentKVMPathGet + "/entries"
+	EnvironmentKVMPathEntriesGet  = EnvironmentKVMPathEntries + "/%s"
+	ProxyKVMPath                  = "o/%s/apis/%s/keyvaluemaps"
+	ProxyKVMPathGet               = ProxyKVMPath + "/%s"
+	ProxyKVMPathEntries           = ProxyKVMPathGet + "/entries"
+	ProxyKVMPathEntriesGet        = ProxyKVMPathEntries + "/%s"
 )
 
 type KVM struct {

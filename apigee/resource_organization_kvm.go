@@ -31,6 +31,7 @@ func resourceOrganizationKVM() *schema.Resource {
 			"encrypted": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 			"entry": {
 				Type:     schema.TypeMap,
@@ -41,20 +42,7 @@ func resourceOrganizationKVM() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: resourceOrganizationKVMCustomDiff,
 	}
-}
-
-func resourceOrganizationKVMCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
-	//A KVM cannot be decrypted so ForceNew if going from true to false
-	if !diff.HasChange("encrypted") {
-		return nil
-	}
-	o, n := diff.GetChange("encrypted")
-	if o.(bool) && !n.(bool) {
-		diff.ForceNew("encrypted")
-	}
-	return nil
 }
 
 func resourceOrganizationKVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -131,40 +119,76 @@ func resourceOrganizationKVMRead(ctx context.Context, d *schema.ResourceData, m 
 func resourceOrganizationKVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
+	//All other properties besides entries are ForceNew so just handle entries here
 	//Check for removal of entries
-	if d.HasChange("entry") {
-		o, n := d.GetChange("entry")
-		oldE := o.(map[string]interface{})
-		newE := n.(map[string]interface{})
-		for oldKey, _ := range oldE {
-			_, newHasKey := newE[oldKey]
-			if newHasKey {
-				continue
+	o, n := d.GetChange("entry")
+	oldE := o.(map[string]interface{})
+	newE := n.(map[string]interface{})
+	for oldKey, _ := range oldE {
+		_, newHasKey := newE[oldKey]
+		if newHasKey {
+			continue
+		}
+		//Delete entry
+		requestPath := fmt.Sprintf(client.OrganizationKVMPathEntriesGet, c.Organization, d.Id(), oldKey)
+		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	requestHeaders := http.Header{
+		headers.ContentType: []string{mime.TypeByExtension(".json")},
+	}
+	//Public Apigee requires entries to be added/changed individually
+	if !c.Private {
+		//Check for addition/modification of entries
+		for newKey, _ := range newE {
+			_, oldHasKey := oldE[newKey]
+			newOrModValue := newE[newKey].(string)
+			//Skip if change with same value
+			if oldHasKey {
+				oldValue := oldE[newKey].(string)
+				if oldValue == newOrModValue {
+					continue
+				}
 			}
-			//Delete entry
-			requestPath := fmt.Sprintf(client.OrganizationKVMPathGetEntry, c.Organization, d.Id(), oldKey)
-			_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+			buf := bytes.Buffer{}
+			newOrModEntry := client.Attribute{
+				Name:  newKey,
+				Value: newOrModValue,
+			}
+			err := json.NewEncoder(&buf).Encode(newOrModEntry)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			requestPath := ""
+			if oldHasKey {
+				//Change entry
+				requestPath = fmt.Sprintf(client.OrganizationKVMPathEntriesGet, c.Organization, d.Id(), newKey)
+			} else {
+				//Add entry
+				requestPath = fmt.Sprintf(client.OrganizationKVMPathEntries, c.Organization, d.Id())
+			}
+			_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
-	}
-	buf := bytes.Buffer{}
-	upOrganizationKVM := client.KVM{
-		Name: d.Id(),
-	}
-	fillOrganizationKVM(&upOrganizationKVM, d)
-	err := json.NewEncoder(&buf).Encode(upOrganizationKVM)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	requestPath := fmt.Sprintf(client.OrganizationKVMPathGet, c.Organization, d.Id())
-	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
-	}
-	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
-	if err != nil {
-		return diag.FromErr(err)
+	} else {
+		buf := bytes.Buffer{}
+		upOrganizationKVM := client.KVM{
+			Name: d.Id(),
+		}
+		fillOrganizationKVM(&upOrganizationKVM, d)
+		err := json.NewEncoder(&buf).Encode(upOrganizationKVM)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		requestPath := fmt.Sprintf(client.OrganizationKVMPathGet, c.Organization, d.Id())
+		_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return diags
 }
