@@ -35,12 +35,12 @@ func Provider() *schema.Provider {
 			},
 			"server": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("APIGEE_SERVER", client.PublicApigeeServer),
 			},
 			"port": {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("APIGEE_PORT", 443),
 				ValidateFunc: validation.IntBetween(0, 65535),
 			},
