@@ -21,7 +21,7 @@ resource "apigee_proxy_kvm" "example" {
 ```
 ## Argument Reference
 * `proxy_name` - **(Required, ForceNew, String)** The name of a proxy
-* `name` - **(Required, ForceNew, String)** The name of the cache
+* `name` - **(Required, ForceNew, String)** The name of the kvm
 * `encrypted` - **(Optional, Boolean)** Determine whether to encrypt the values within the kvm.  Changing this value from `true` to `false` will cause ForceNew since Apigee will not decrypt values. 
 * `entry` - **(Optional, Map of String to String)** Keys and values to be stored within the kvm.
 ## Attribute Reference
