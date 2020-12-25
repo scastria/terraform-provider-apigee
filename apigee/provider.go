@@ -76,6 +76,7 @@ func Provider() *schema.Provider {
 			"apigee_organization_resource_file": resourceOrganizationResourceFile(),
 			"apigee_environment_resource_file":  resourceEnvironmentResourceFile(),
 			"apigee_proxy_resource_file":        resourceProxyResourceFile(),
+			"apigee_proxy_policy":               resourceProxyPolicy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),

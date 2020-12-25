@@ -93,6 +93,20 @@ func (c *Client) requestPath(path string) string {
 	return fmt.Sprintf("https://%s:%d/v1/%s", c.server, c.port, path)
 }
 
+func GetBuffer(filename string) (*bytes.Buffer, error) {
+	buf := bytes.Buffer{}
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	_, err = buf.ReadFrom(file)
+	if err != nil {
+		return nil, err
+	}
+	return &buf, nil
+}
+
 func GetMultiPartBuffer(filename string, key string) (*multipart.Writer, *bytes.Buffer, error) {
 	buf := bytes.Buffer{}
 	mp := multipart.NewWriter(&buf)
