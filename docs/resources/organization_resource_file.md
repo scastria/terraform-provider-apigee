@@ -13,7 +13,7 @@ resource "apigee_organization_resource_file" "example" {
 }
 ```
 ## Argument Reference
-* `type` - **(Required, ForceNew, String)** The type of the resource.  Must be one of `java`, `js`, `jsc`, `hosted`, `node`, `py`, `wsdl`, `xsd`, or `xsl`.
+* `type` - **(Required, ForceNew, String)** The type of the resource.
 * `name` - **(Required, ForceNew, String)** The name of the resource.
 * `file` - **(Required, String)** The filename of the resource.
 * `file_hash` - **(Required, String)** The hash of the file used to detect changes of the contents of the file.

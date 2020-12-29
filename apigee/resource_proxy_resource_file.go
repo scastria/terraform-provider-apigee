@@ -36,10 +36,9 @@ func resourceProxyResourceFile() *schema.Resource {
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"java", "js", "jsc", "hosted", "node", "py", "wsdl", "xsd", "xsl"}, false),
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 			"name": {
 				Type:     schema.TypeString,

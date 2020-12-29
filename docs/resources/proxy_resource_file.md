@@ -22,7 +22,7 @@ resource "apigee_proxy_resource_file" "example" {
 ## Argument Reference
 * `proxy_name` - **(Required, ForceNew, String)** The name of a proxy.
 * `revision` - **(Required, ForceNew, Integer)** The revision of a proxy.
-* `type` - **(Required, ForceNew, String)** The type of the resource.  Must be one of `java`, `js`, `jsc`, `hosted`, `node`, `py`, `wsdl`, `xsd`, or `xsl`.
+* `type` - **(Required, ForceNew, String)** The type of the resource.
 * `name` - **(Required, ForceNew, String)** The name of the resource.
 * `file` - **(Required, String)** The filename of the resource.
 * `file_hash` - **(Required, String)** The hash of the file used to detect changes of the contents of the file.

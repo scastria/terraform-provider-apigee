@@ -8,7 +8,6 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"net/http"
 	"net/url"
@@ -30,10 +29,9 @@ func resourceEnvironmentResourceFile() *schema.Resource {
 				ForceNew: true,
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"java", "js", "jsc", "hosted", "node", "py", "wsdl", "xsd", "xsl"}, false),
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
