@@ -1,7 +1,7 @@
 package client
 
 const (
-	DeveloperPath    = "o/%s/developers"
+	DeveloperPath    = "organizations/%s/developers"
 	DeveloperPathGet = DeveloperPath + "/%s"
 )
 

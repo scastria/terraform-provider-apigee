@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	RolePermissionPath    = "o/%s/userroles/%s/permissions"
+	RolePermissionPath    = "organizations/%s/userroles/%s/permissions"
 	RolePermissionPathGet = RolePermissionPath + "/%s"
 )
 

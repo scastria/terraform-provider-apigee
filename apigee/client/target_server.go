@@ -3,7 +3,7 @@ package client
 import "strings"
 
 const (
-	TargetServerPath    = "o/%s/e/%s/targetservers"
+	TargetServerPath    = "organizations/%s/environments/%s/targetservers"
 	TargetServerPathGet = TargetServerPath + "/%s"
 )
 

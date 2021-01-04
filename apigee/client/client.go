@@ -18,6 +18,7 @@ const (
 	IdSeparator        = ":"
 	Bearer             = "Bearer"
 	PublicApigeeServer = "api.enterprise.apigee.com"
+	GoogleApigeeServer = "apigee.googleapis.com"
 )
 
 type Client struct {
@@ -43,7 +44,7 @@ func NewClient(username string, password string, accessToken string, server stri
 }
 
 func (c *Client) IsPublic() bool {
-	return c.server == PublicApigeeServer
+	return (c.server == PublicApigeeServer) || (c.server == GoogleApigeeServer)
 }
 
 func (c *Client) HttpRequest(method string, path string, query url.Values, headerMap http.Header, body *bytes.Buffer) (closer io.ReadCloser, err error) {

@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	OrganizationResourceFilePath       = "o/%s/resourcefiles"
+	OrganizationResourceFilePath       = "organizations/%s/resourcefiles"
 	OrganizationResourceFilePathOfType = OrganizationResourceFilePath + "/%s"
 	OrganizationResourceFilePathGet    = OrganizationResourceFilePathOfType + "/%s"
-	EnvironmentResourceFilePath        = "o/%s/e/%s/resourcefiles"
+	EnvironmentResourceFilePath        = "organizations/%s/environments/%s/resourcefiles"
 	EnvironmentResourceFilePathOfType  = EnvironmentResourceFilePath + "/%s"
 	EnvironmentResourceFilePathGet     = EnvironmentResourceFilePathOfType + "/%s"
-	ProxyResourceFilePath              = "o/%s/apis/%s/revisions/%d/resourcefiles"
+	ProxyResourceFilePath              = "organizations/%s/apis/%s/revisions/%d/resourcefiles"
 	ProxyResourceFilePathOfType        = ProxyResourceFilePath + "/%s"
 	ProxyResourceFilePathGet           = ProxyResourceFilePathOfType + "/%s"
 )

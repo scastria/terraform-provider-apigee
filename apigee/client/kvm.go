@@ -3,15 +3,15 @@ package client
 import "strings"
 
 const (
-	OrganizationKVMPath           = "o/%s/keyvaluemaps"
+	OrganizationKVMPath           = "organizations/%s/keyvaluemaps"
 	OrganizationKVMPathGet        = OrganizationKVMPath + "/%s"
 	OrganizationKVMPathEntries    = OrganizationKVMPathGet + "/entries"
 	OrganizationKVMPathEntriesGet = OrganizationKVMPathEntries + "/%s"
-	EnvironmentKVMPath            = "o/%s/e/%s/keyvaluemaps"
+	EnvironmentKVMPath            = "organizations/%s/environments/%s/keyvaluemaps"
 	EnvironmentKVMPathGet         = EnvironmentKVMPath + "/%s"
 	EnvironmentKVMPathEntries     = EnvironmentKVMPathGet + "/entries"
 	EnvironmentKVMPathEntriesGet  = EnvironmentKVMPathEntries + "/%s"
-	ProxyKVMPath                  = "o/%s/apis/%s/keyvaluemaps"
+	ProxyKVMPath                  = "organizations/%s/apis/%s/keyvaluemaps"
 	ProxyKVMPathGet               = ProxyKVMPath + "/%s"
 	ProxyKVMPathEntries           = ProxyKVMPathGet + "/entries"
 	ProxyKVMPathEntriesGet        = ProxyKVMPathEntries + "/%s"

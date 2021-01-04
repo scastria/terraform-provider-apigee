@@ -3,8 +3,8 @@ package client
 import "strings"
 
 const (
-	ProxyDeploymentPath         = "o/%s/e/%s/apis/%s/deployments"
-	ProxyDeploymentRevisionPath = "o/%s/e/%s/apis/%s/revisions/%d/deployments"
+	ProxyDeploymentPath         = "organizations/%s/environments/%s/apis/%s/deployments"
+	ProxyDeploymentRevisionPath = "organizations/%s/environments/%s/apis/%s/revisions/%d/deployments"
 )
 
 type ProxyDeployment struct {

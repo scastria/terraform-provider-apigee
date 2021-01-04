@@ -1,7 +1,7 @@
 package client
 
 const (
-	CompanyPath    = "o/%s/companies"
+	CompanyPath    = "organizations/%s/companies"
 	CompanyPathGet = CompanyPath + "/%s"
 )
 

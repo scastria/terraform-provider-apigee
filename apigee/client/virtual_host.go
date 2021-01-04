@@ -3,7 +3,7 @@ package client
 import "strings"
 
 const (
-	VirtualHostPath    = "o/%s/e/%s/virtualhosts"
+	VirtualHostPath    = "organizations/%s/environments/%s/virtualhosts"
 	VirtualHostPathGet = VirtualHostPath + "/%s"
 )
 

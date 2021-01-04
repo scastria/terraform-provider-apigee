@@ -3,10 +3,10 @@ package client
 import "strings"
 
 const (
-	DeveloperAppPath             = "o/%s/developers/%s/apps"
+	DeveloperAppPath             = "organizations/%s/developers/%s/apps"
 	DeveloperAppPathGet          = DeveloperAppPath + "/%s"
 	DeveloperAppPathGeneratedKey = DeveloperAppPathGet + "/keys/%s"
-	CompanyAppPath               = "o/%s/companies/%s/apps"
+	CompanyAppPath               = "organizations/%s/companies/%s/apps"
 	CompanyAppPathGet            = CompanyAppPath + "/%s"
 	CompanyAppPathGeneratedKey   = CompanyAppPathGet + "/keys/%s"
 )

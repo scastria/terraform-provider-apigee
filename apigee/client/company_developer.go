@@ -3,7 +3,7 @@ package client
 import "strings"
 
 const (
-	CompanyDeveloperPath    = "o/%s/companies/%s/developers"
+	CompanyDeveloperPath    = "organizations/%s/companies/%s/developers"
 	CompanyDeveloperPathGet = CompanyDeveloperPath + "/%s"
 )
 

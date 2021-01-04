@@ -3,8 +3,8 @@ package client
 import "strings"
 
 const (
-	SharedFlowDeploymentPath         = "o/%s/e/%s/sharedflows/%s/deployments"
-	SharedFlowDeploymentRevisionPath = "o/%s/e/%s/sharedflows/%s/revisions/%d/deployments"
+	SharedFlowDeploymentPath         = "organizations/%s/environments/%s/sharedflows/%s/deployments"
+	SharedFlowDeploymentRevisionPath = "organizations/%s/environments/%s/sharedflows/%s/revisions/%d/deployments"
 )
 
 type SharedFlowDeployment struct {

@@ -1,7 +1,7 @@
 package client
 
 const (
-	SharedFlowPath    = "o/%s/sharedflows"
+	SharedFlowPath    = "organizations/%s/sharedflows"
 	SharedFlowPathGet = SharedFlowPath + "/%s"
 )
 

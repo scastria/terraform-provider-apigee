@@ -3,7 +3,7 @@ package client
 import "strings"
 
 const (
-	CachePath    = "o/%s/e/%s/caches"
+	CachePath    = "organizations/%s/environments/%s/caches"
 	CachePathGet = CachePath + "/%s"
 )
 

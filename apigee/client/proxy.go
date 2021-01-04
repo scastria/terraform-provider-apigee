@@ -1,7 +1,7 @@
 package client
 
 const (
-	ProxyPath    = "o/%s/apis"
+	ProxyPath    = "organizations/%s/apis"
 	ProxyPathGet = ProxyPath + "/%s"
 )
 

@@ -1,7 +1,7 @@
 package client
 
 const (
-	RolePath    = "o/%s/userroles"
+	RolePath    = "organizations/%s/userroles"
 	RolePathGet = RolePath + "/%s"
 )
 

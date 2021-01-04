@@ -3,11 +3,11 @@ package client
 import "strings"
 
 const (
-	DeveloperAppCredentialPath        = "o/%s/developers/%s/apps/%s/keys"
+	DeveloperAppCredentialPath        = "organizations/%s/developers/%s/apps/%s/keys"
 	DeveloperAppCredentialPathCreate  = DeveloperAppCredentialPath + "/create"
 	DeveloperAppCredentialPathGet     = DeveloperAppCredentialPath + "/%s"
 	DeveloperAppCredentialPathProduct = DeveloperAppCredentialPathGet + "/apiproducts/%s"
-	CompanyAppCredentialPath          = "o/%s/companies/%s/apps/%s/keys"
+	CompanyAppCredentialPath          = "organizations/%s/companies/%s/apps/%s/keys"
 	CompanyAppCredentialPathCreate    = CompanyAppCredentialPath + "/create"
 	CompanyAppCredentialPathGet       = CompanyAppCredentialPath + "/%s"
 	CompanyAppCredentialPathProduct   = CompanyAppCredentialPathGet + "/apiproducts/%s"

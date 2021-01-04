@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	ProxyPolicyPath    = "o/%s/apis/%s/revisions/%d/policies"
+	ProxyPolicyPath    = "organizations/%s/apis/%s/revisions/%d/policies"
 	ProxyPolicyPathGet = ProxyPolicyPath + "/%s"
 )
 

@@ -1,7 +1,7 @@
 package client
 
 const (
-	ProductPath        = "o/%s/apiproducts"
+	ProductPath        = "organizations/%s/apiproducts"
 	ProductPathGet     = ProductPath + "/%s"
 	AutoApprovalType   = "auto"
 	ManualApprovalType = "manual"
