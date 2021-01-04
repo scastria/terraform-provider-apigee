@@ -47,6 +47,10 @@ func (c *Client) IsPublic() bool {
 	return (c.server == PublicApigeeServer) || (c.server == GoogleApigeeServer)
 }
 
+func (c *Client) IsGoogle() bool {
+	return c.server == GoogleApigeeServer
+}
+
 func (c *Client) HttpRequest(method string, path string, query url.Values, headerMap http.Header, body *bytes.Buffer) (closer io.ReadCloser, err error) {
 	req, err := http.NewRequest(method, c.requestPath(path), body)
 	if err != nil {

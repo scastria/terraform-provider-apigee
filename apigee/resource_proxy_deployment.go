@@ -87,7 +87,12 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 		return diag.FromErr(err)
 	}
-	retVal := &client.ProxyDeployment{}
+	var retVal interface{}
+	if c.IsGoogle() {
+		retVal = &client.GoogleProxyDeployment{}
+	} else {
+		retVal = &client.ProxyDeployment{}
+	}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		d.SetId("")
@@ -95,9 +100,16 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 	d.Set("environment_name", envName)
 	d.Set("proxy_name", proxyName)
+	lastRevision := ""
 	//Retrieve the latest revision deployed as THE revision, assumes array is sorted
-	lastRevision := retVal.Revisions[len(retVal.Revisions)-1]
-	revision, _ := strconv.Atoi(lastRevision.Name)
+	if c.IsGoogle() {
+		googleRetVal := retVal.(*client.GoogleProxyDeployment)
+		lastRevision = googleRetVal.Deployments[len(googleRetVal.Deployments)-1].Revision
+	} else {
+		oldRetVal := retVal.(*client.ProxyDeployment)
+		lastRevision = oldRetVal.Revisions[len(oldRetVal.Revisions)-1].Name
+	}
+	revision, _ := strconv.Atoi(lastRevision)
 	d.Set("revision", revision)
 	return diags
 }
@@ -133,14 +145,32 @@ func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	envDeployments := &client.ProxyDeployment{}
+	var envDeployments interface{}
+	if c.IsGoogle() {
+		envDeployments = &client.GoogleProxyDeployment{}
+	} else {
+		envDeployments = &client.ProxyDeployment{}
+	}
 	err = json.NewDecoder(body).Decode(envDeployments)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	var deployedRevisions []int
+	if c.IsGoogle() {
+		googleEnvDeployments := envDeployments.(*client.GoogleProxyDeployment)
+		for _, dr := range googleEnvDeployments.Deployments {
+			revision, _ := strconv.Atoi(dr.Revision)
+			deployedRevisions = append(deployedRevisions, revision)
+		}
+	} else {
+		oldEnvDeployments := envDeployments.(*client.ProxyDeployment)
+		for _, rev := range oldEnvDeployments.Revisions {
+			revision, _ := strconv.Atoi(rev.Name)
+			deployedRevisions = append(deployedRevisions, revision)
+		}
+	}
 	//Delete each deployment
-	for _, rev := range envDeployments.Revisions {
-		revision, _ := strconv.Atoi(rev.Name)
+	for _, revision := range deployedRevisions {
 		requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
 		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 		if err != nil {
