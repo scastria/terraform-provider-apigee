@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/go-http-utils/headers"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 )
@@ -72,6 +74,13 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 		req.Header.Set(headers.Authorization, Bearer+" "+c.accessToken)
 	} else {
 		req.SetBasicAuth(c.username, c.password)
+	}
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		log.Print("Apigee Management API:")
+		log.Print(err)
+	} else {
+		log.Print("Apigee Management API: " + string(requestDump))
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
