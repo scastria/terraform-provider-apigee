@@ -123,7 +123,9 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
 	requestForm := url.Values{
 		"override": []string{strconv.FormatBool(true)},
-		"delay":    []string{strconv.Itoa(delay)},
+	}
+	if !c.IsGoogle() {
+		requestForm["delay"] = []string{strconv.Itoa(delay)}
 	}
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.FormEncoded},
