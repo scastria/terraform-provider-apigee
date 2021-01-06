@@ -8,7 +8,7 @@ const (
 )
 
 type CompanyDeveloper struct {
-	CompanyName    string
+	CompanyName    string `json:"-"`
 	DeveloperEmail string `json:"email"`
 	Role           string `json:"role"`
 }

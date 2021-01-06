@@ -14,29 +14,29 @@ const (
 )
 
 type AppCredential struct {
-	AppName        string
+	AppName        string             `json:"-"`
 	ConsumerKey    string             `json:"consumerKey"`
 	ConsumerSecret string             `json:"consumerSecret"`
 	Scopes         []string           `json:"scopes"`
 	APIProducts    []APIProductStatus `json:"apiProducts"`
 	Attributes     []Attribute        `json:"attributes,omitempty"`
 	//Only used for developer context
-	DeveloperEmail string
+	DeveloperEmail string `json:"-"`
 	//Only used for company context
-	CompanyName string
+	CompanyName string `json:"-"`
 }
 
 type AppCredentialModify struct {
-	AppName        string
+	AppName        string      `json:"-"`
 	ConsumerKey    string      `json:"consumerKey"`
 	ConsumerSecret string      `json:"consumerSecret"`
 	Scopes         []string    `json:"scopes"`
 	APIProducts    []string    `json:"apiProducts"`
 	Attributes     []Attribute `json:"attributes,omitempty"`
 	//Only used for developer context
-	DeveloperEmail string
+	DeveloperEmail string `json:"-"`
 	//Only used for company context
-	CompanyName string
+	CompanyName string `json:"-"`
 }
 
 type APIProductStatus struct {

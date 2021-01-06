@@ -21,11 +21,11 @@ type ResourceFile struct {
 	Type string `json:"type"`
 	Name string `json:"name"`
 	//Only used for Environment context
-	EnvironmentName string
+	EnvironmentName string `json:"-"`
 	//Only used for Proxy context
-	ProxyName string
+	ProxyName string `json:"-"`
 	//Only used for Proxy context
-	Revision int
+	Revision int `json:"-"`
 }
 type ResourceFilesOfType struct {
 	Files []ResourceFile `json:"resourceFile"`

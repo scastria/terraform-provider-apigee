@@ -10,7 +10,7 @@ const (
 )
 
 type RolePermission struct {
-	RoleName    string
+	RoleName    string   `json:"-"`
 	Path        string   `json:"path"`
 	Permissions []string `json:"permissions"`
 }

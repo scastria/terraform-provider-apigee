@@ -22,9 +22,9 @@ type KVM struct {
 	Encrypted bool        `json:"encrypted,omitempty"`
 	Entries   []Attribute `json:"entry,omitempty"`
 	//Only used for Environment context
-	EnvironmentName string
+	EnvironmentName string `json:"-"`
 	//Only used for Proxy context
-	ProxyName string
+	ProxyName string `json:"-"`
 }
 
 func (c *KVM) EnvironmentKVMEncodeId() string {

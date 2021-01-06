@@ -17,9 +17,9 @@ type App struct {
 	Attributes  []Attribute     `json:"attributes,omitempty"`
 	Credentials []AppCredential `json:"credentials"`
 	//Only used for developer context
-	DeveloperEmail string
+	DeveloperEmail string `json:"-"`
 	//Only used for company context
-	CompanyName string
+	CompanyName string `json:"-"`
 }
 
 func (ur *App) DeveloperAppEncodeId() string {

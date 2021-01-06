@@ -8,7 +8,7 @@ const (
 )
 
 type VirtualHost struct {
-	EnvironmentName string
+	EnvironmentName string   `json:"-"`
 	Name            string   `json:"name"`
 	HostAliases     []string `json:"hostAliases"`
 	Port            string   `json:"port,omitempty"`

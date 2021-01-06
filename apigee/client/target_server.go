@@ -8,7 +8,7 @@ const (
 )
 
 type TargetServer struct {
-	EnvironmentName string
+	EnvironmentName string `json:"-"`
 	Name            string `json:"name"`
 	Host            string `json:"host,omitempty"`
 	Port            int    `json:"port,omitempty"`

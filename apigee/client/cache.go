@@ -8,7 +8,7 @@ const (
 )
 
 type Cache struct {
-	EnvironmentName string
+	EnvironmentName string     `json:"-"`
 	Name            string     `json:"name"`
 	Description     string     `json:"description,omitempty"`
 	ExpirySettings  Expiration `json:"expirySettings,omitempty"`
