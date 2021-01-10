@@ -3,6 +3,8 @@ subcategory: "Admin"
 ---
 # Resource: apigee_user
 Represents a user
+###
+NOTE: Only supported by [Apigee Edge for Private Cloud (OPDK)](https://apidocs.apigee.com/apis)
 ## Example usage
 ```hcl
 resource "apigee_user" "example" {

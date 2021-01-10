@@ -1,5 +1,12 @@
 # Apigee Provider
-The Apigee provider is used to interact with the many resources supported by Apigee.  The provider needs to be configured with the proper credentials before it can be used.
+The Apigee provider is used to interact with the many resources supported by Apigee.  The provider needs to be
+configured with the proper credentials before it can be used.  The provider tries to work with all 3 known Apigee
+hosting options:
+1. [Apigee Edge for Private Cloud (OPDK)](https://apidocs.apigee.com/apis)
+2. [Apigee Edge for Public Cloud (api.enterprise.apigee.com)](https://apidocs.apigee.com/apis)
+3. [Apigee on Google Cloud (apigee.googleapis.com)](https://cloud.google.com/apigee/docs/reference)
+
+However, each Apigee hosting option has different functionality so not all terraform resource types may be supported.
 ## Example Usage
 Terraform 0.13 and later:
 ```hcl
