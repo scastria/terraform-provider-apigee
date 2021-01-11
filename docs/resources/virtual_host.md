@@ -19,6 +19,9 @@ resource "apigee_virtual_host" "example" {
 * `host_aliases` - **(Required, List of String)** The aliases for the virtual host
 * `port` - **(Optional, Integer)** The port of the virtual host
 * `base_url` - **(Optional, String)** The base URL of the virtual host
+* `ssl_enabled` - **(Optional, Boolean)** Whether to communicate with this virtual host over TLS/SSL
+* `ssl_keystore` - **(Optional, String)** Name of the keystore
+* `ssl_keyalias` - **(Optional, String)** Name of the alias within the keystore
 ## Attribute Reference
 * `id` - Same as `environment_name`:`name`
 ## Import

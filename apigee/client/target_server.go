@@ -16,10 +16,6 @@ type TargetServer struct {
 	SSLInfo         *SSL   `json:"sSLInfo,omitempty"`
 }
 
-type SSL struct {
-	Enabled string `json:"enabled"`
-}
-
 func (c *TargetServer) TargetServerEncodeId() string {
 	return c.EnvironmentName + IdSeparator + c.Name
 }

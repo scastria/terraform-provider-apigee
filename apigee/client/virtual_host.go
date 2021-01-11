@@ -13,6 +13,7 @@ type VirtualHost struct {
 	HostAliases     []string `json:"hostAliases"`
 	Port            string   `json:"port,omitempty"`
 	BaseURL         string   `json:"baseUrl,omitempty"`
+	SSLInfo         *SSL     `json:"sSLInfo,omitempty"`
 }
 
 func (c *VirtualHost) VirtualHostEncodeId() string {

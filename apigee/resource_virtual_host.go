@@ -53,6 +53,18 @@ func resourceVirtualHost() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IsURLWithScheme([]string{"http", "https"}),
 			},
+			"ssl_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"ssl_keystore": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ssl_keyalias": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -100,6 +112,18 @@ func fillVirtualHost(c *client.VirtualHost, d *schema.ResourceData) {
 	if ok {
 		c.BaseURL = baseURL.(string)
 	}
+	sslEnabled, ok := d.GetOk("ssl_enabled")
+	c.SSLInfo = &client.SSL{
+		Enabled: strconv.FormatBool(sslEnabled.(bool)),
+	}
+	sslKeyStore, ok := d.GetOk("ssl_keystore")
+	if ok {
+		c.SSLInfo.KeyStore = sslKeyStore.(string)
+	}
+	sslKeyAlias, ok := d.GetOk("ssl_keyalias")
+	if ok {
+		c.SSLInfo.KeyAlias = sslKeyAlias.(string)
+	}
 }
 
 func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -128,6 +152,16 @@ func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m inte
 	port, _ := strconv.Atoi(retVal.Port)
 	d.Set("port", port)
 	d.Set("base_url", retVal.BaseURL)
+	if retVal.SSLInfo != nil {
+		sslEnabled, _ := strconv.ParseBool(retVal.SSLInfo.Enabled)
+		d.Set("ssl_enabled", sslEnabled)
+		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
+		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
+	} else {
+		d.Set("ssl_enabled", false)
+		d.Set("ssl_keystore", "")
+		d.Set("ssl_keyalias", "")
+	}
 	return diags
 }
 

@@ -92,10 +92,8 @@ func fillTargetServer(c *client.TargetServer, d *schema.ResourceData) {
 		c.IsEnabled = isEnabled.(bool)
 	}
 	sslEnabled, ok := d.GetOk("ssl_enabled")
-	if ok {
-		c.SSLInfo = &client.SSL{
-			Enabled: strconv.FormatBool(sslEnabled.(bool)),
-		}
+	c.SSLInfo = &client.SSL{
+		Enabled: strconv.FormatBool(sslEnabled.(bool)),
 	}
 }
 
