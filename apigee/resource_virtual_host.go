@@ -65,6 +65,10 @@ func resourceVirtualHost() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"ssl_truststore": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -124,6 +128,10 @@ func fillVirtualHost(c *client.VirtualHost, d *schema.ResourceData) {
 	if ok {
 		c.SSLInfo.KeyAlias = sslKeyAlias.(string)
 	}
+	sslTrustStore, ok := d.GetOk("ssl_truststore")
+	if ok {
+		c.SSLInfo.TrustStore = sslTrustStore.(string)
+	}
 }
 
 func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -157,10 +165,12 @@ func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("ssl_enabled", sslEnabled)
 		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
 		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
+		d.Set("ssl_truststore", retVal.SSLInfo.TrustStore)
 	} else {
 		d.Set("ssl_enabled", false)
 		d.Set("ssl_keystore", "")
 		d.Set("ssl_keyalias", "")
+		d.Set("ssl_truststore", "")
 	}
 	return diags
 }

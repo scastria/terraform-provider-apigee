@@ -22,6 +22,7 @@ resource "apigee_virtual_host" "example" {
 * `ssl_enabled` - **(Optional, Boolean)** Whether to communicate with this virtual host over TLS/SSL
 * `ssl_keystore` - **(Optional, String)** Name of the keystore
 * `ssl_keyalias` - **(Optional, String)** Name of the alias within the keystore
+* `ssl_truststore` - **(Optional, String)** Name of the truststore that contains the certificate
 ## Attribute Reference
 * `id` - Same as `environment_name`:`name`
 ## Import

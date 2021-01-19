@@ -53,6 +53,18 @@ func resourceTargetServer() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"ssl_keystore": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ssl_keyalias": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ssl_truststore": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -95,6 +107,18 @@ func fillTargetServer(c *client.TargetServer, d *schema.ResourceData) {
 	c.SSLInfo = &client.SSL{
 		Enabled: strconv.FormatBool(sslEnabled.(bool)),
 	}
+	sslKeyStore, ok := d.GetOk("ssl_keystore")
+	if ok {
+		c.SSLInfo.KeyStore = sslKeyStore.(string)
+	}
+	sslKeyAlias, ok := d.GetOk("ssl_keyalias")
+	if ok {
+		c.SSLInfo.KeyAlias = sslKeyAlias.(string)
+	}
+	sslTrustStore, ok := d.GetOk("ssl_truststore")
+	if ok {
+		c.SSLInfo.TrustStore = sslTrustStore.(string)
+	}
 }
 
 func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -122,11 +146,18 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 	d.Set("host", retVal.Host)
 	d.Set("port", retVal.Port)
 	d.Set("is_enabled", retVal.IsEnabled)
-	sslEnabled := false
 	if retVal.SSLInfo != nil {
-		sslEnabled, _ = strconv.ParseBool(retVal.SSLInfo.Enabled)
+		sslEnabled, _ := strconv.ParseBool(retVal.SSLInfo.Enabled)
+		d.Set("ssl_enabled", sslEnabled)
+		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
+		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
+		d.Set("ssl_truststore", retVal.SSLInfo.TrustStore)
+	} else {
+		d.Set("ssl_enabled", false)
+		d.Set("ssl_keystore", "")
+		d.Set("ssl_keyalias", "")
+		d.Set("ssl_truststore", "")
 	}
-	d.Set("ssl_enabled", sslEnabled)
 	return diags
 }
 
