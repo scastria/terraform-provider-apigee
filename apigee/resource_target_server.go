@@ -129,7 +129,7 @@ func fillTargetServer(c *client.TargetServer, d *schema.ResourceData) {
 	}
 	sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
 	if ok {
-		c.SSLInfo.ClientAuthEnabled = sslClientAuthEnabled.(bool)
+		c.SSLInfo.ClientAuthEnabled = strconv.FormatBool(sslClientAuthEnabled.(bool))
 	}
 	sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
 	if ok {
@@ -168,7 +168,8 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
 		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
 		d.Set("ssl_truststore", retVal.SSLInfo.TrustStore)
-		d.Set("ssl_client_auth_enabled", retVal.SSLInfo.ClientAuthEnabled)
+		sslClientAuthEnabled, _ := strconv.ParseBool(retVal.SSLInfo.ClientAuthEnabled)
+		d.Set("ssl_client_auth_enabled", sslClientAuthEnabled)
 		d.Set("ssl_ignore_validation_errors", retVal.SSLInfo.IgnoreValidationErrors)
 	} else {
 		d.Set("ssl_enabled", false)

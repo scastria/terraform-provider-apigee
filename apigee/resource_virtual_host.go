@@ -142,7 +142,7 @@ func fillVirtualHost(c *client.VirtualHost, d *schema.ResourceData) {
 	}
 	sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
 	if ok {
-		c.SSLInfo.ClientAuthEnabled = sslClientAuthEnabled.(bool)
+		c.SSLInfo.ClientAuthEnabled = strconv.FormatBool(sslClientAuthEnabled.(bool))
 	}
 	sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
 	if ok {
@@ -189,7 +189,8 @@ func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("ssl_keystore", "")
 		d.Set("ssl_keyalias", "")
 		d.Set("ssl_truststore", "")
-		d.Set("ssl_client_auth_enabled", false)
+		sslClientAuthEnabled, _ := strconv.ParseBool(retVal.SSLInfo.ClientAuthEnabled)
+		d.Set("ssl_client_auth_enabled", sslClientAuthEnabled)
 		d.Set("ssl_ignore_validation_errors", false)
 	}
 	return diags

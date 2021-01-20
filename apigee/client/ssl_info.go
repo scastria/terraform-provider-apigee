@@ -5,6 +5,6 @@ type SSL struct {
 	KeyStore               string `json:"keyStore,omitempty"`
 	KeyAlias               string `json:"keyAlias,omitempty"`
 	TrustStore             string `json:"trustStore,omitempty"`
-	ClientAuthEnabled      bool   `json:"clientAuthEnabled,omitempty"`
+	ClientAuthEnabled      string `json:"clientAuthEnabled,omitempty"`
 	IgnoreValidationErrors bool   `json:"ignoreValidationErrors,omitempty"`
 }
