@@ -125,27 +125,25 @@ func fillVirtualHost(c *client.VirtualHost, d *schema.ResourceData) {
 		c.BaseURL = baseURL.(string)
 	}
 	sslEnabled, ok := d.GetOk("ssl_enabled")
-	c.SSLInfo = &client.SSL{
-		Enabled: strconv.FormatBool(sslEnabled.(bool)),
-	}
-	sslKeyStore, ok := d.GetOk("ssl_keystore")
-	if ok {
-		c.SSLInfo.KeyStore = sslKeyStore.(string)
-	}
-	sslKeyAlias, ok := d.GetOk("ssl_keyalias")
-	if ok {
-		c.SSLInfo.KeyAlias = sslKeyAlias.(string)
-	}
-	sslTrustStore, ok := d.GetOk("ssl_truststore")
-	if ok {
-		c.SSLInfo.TrustStore = sslTrustStore.(string)
-	}
-	sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
-	if ok {
+	if sslEnabled.(bool) {
+		c.SSLInfo = &client.SSL{
+			Enabled: strconv.FormatBool(true),
+		}
+		sslKeyStore, ok := d.GetOk("ssl_keystore")
+		if ok {
+			c.SSLInfo.KeyStore = sslKeyStore.(string)
+		}
+		sslKeyAlias, ok := d.GetOk("ssl_keyalias")
+		if ok {
+			c.SSLInfo.KeyAlias = sslKeyAlias.(string)
+		}
+		sslTrustStore, ok := d.GetOk("ssl_truststore")
+		if ok {
+			c.SSLInfo.TrustStore = sslTrustStore.(string)
+		}
+		sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
 		c.SSLInfo.ClientAuthEnabled = strconv.FormatBool(sslClientAuthEnabled.(bool))
-	}
-	sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
-	if ok {
+		sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
 		c.SSLInfo.IgnoreValidationErrors = sslIgnoreValidationErrors.(bool)
 	}
 }
@@ -182,15 +180,15 @@ func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
 		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
 		d.Set("ssl_truststore", retVal.SSLInfo.TrustStore)
-		d.Set("ssl_client_auth_enabled", retVal.SSLInfo.ClientAuthEnabled)
+		sslClientAuthEnabled, _ := strconv.ParseBool(retVal.SSLInfo.ClientAuthEnabled)
+		d.Set("ssl_client_auth_enabled", sslClientAuthEnabled)
 		d.Set("ssl_ignore_validation_errors", retVal.SSLInfo.IgnoreValidationErrors)
 	} else {
 		d.Set("ssl_enabled", false)
 		d.Set("ssl_keystore", "")
 		d.Set("ssl_keyalias", "")
 		d.Set("ssl_truststore", "")
-		sslClientAuthEnabled, _ := strconv.ParseBool(retVal.SSLInfo.ClientAuthEnabled)
-		d.Set("ssl_client_auth_enabled", sslClientAuthEnabled)
+		d.Set("ssl_client_auth_enabled", false)
 		d.Set("ssl_ignore_validation_errors", false)
 	}
 	return diags
