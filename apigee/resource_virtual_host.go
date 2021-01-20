@@ -69,6 +69,14 @@ func resourceVirtualHost() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"ssl_client_auth_enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"ssl_ignore_validation_errors": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -132,6 +140,14 @@ func fillVirtualHost(c *client.VirtualHost, d *schema.ResourceData) {
 	if ok {
 		c.SSLInfo.TrustStore = sslTrustStore.(string)
 	}
+	sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
+	if ok {
+		c.SSLInfo.ClientAuthEnabled = sslClientAuthEnabled.(bool)
+	}
+	sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
+	if ok {
+		c.SSLInfo.IgnoreValidationErrors = sslIgnoreValidationErrors.(bool)
+	}
 }
 
 func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -166,11 +182,15 @@ func resourceVirtualHostRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
 		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
 		d.Set("ssl_truststore", retVal.SSLInfo.TrustStore)
+		d.Set("ssl_client_auth_enabled", retVal.SSLInfo.ClientAuthEnabled)
+		d.Set("ssl_ignore_validation_errors", retVal.SSLInfo.IgnoreValidationErrors)
 	} else {
 		d.Set("ssl_enabled", false)
 		d.Set("ssl_keystore", "")
 		d.Set("ssl_keyalias", "")
 		d.Set("ssl_truststore", "")
+		d.Set("ssl_client_auth_enabled", false)
+		d.Set("ssl_ignore_validation_errors", false)
 	}
 	return diags
 }

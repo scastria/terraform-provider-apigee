@@ -22,6 +22,8 @@ resource "apigee_target_server" "example" {
 * `ssl_keystore` - **(Optional, String)** Name of the keystore
 * `ssl_keyalias` - **(Optional, String)** Name of the alias within the keystore
 * `ssl_truststore` - **(Optional, String)** Name of the truststore that contains the certificate
+* `ssl_client_auth_enabled` - **(Optional, Boolean)** Enable two-way TLS between Apigee and target
+* `ssl_ignore_validation_errors` - **(Optional, Boolean)** Ignore TLS certificate errors
 ## Attribute Reference
 * `id` - Same as `environment_name`:`name`
 ## Import
