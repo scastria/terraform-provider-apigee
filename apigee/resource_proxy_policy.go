@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"mime"
 	"net/http"
 )
 
@@ -70,7 +69,7 @@ func resourceProxyPolicyCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 	requestPath := fmt.Sprintf(client.ProxyPolicyPath, c.Organization, newProxyPolicy.ProxyName, newProxyPolicy.Revision)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".xml")},
+		headers.ContentType: []string{client.ApplicationXml},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, buf)
 	if err != nil {

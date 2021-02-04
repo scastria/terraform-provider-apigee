@@ -15,6 +15,8 @@ import (
 
 const (
 	FormEncoded        = "application/x-www-form-urlencoded"
+	ApplicationJson    = "application/json"
+	ApplicationXml     = "application/xml"
 	IdSeparator        = ":"
 	Bearer             = "Bearer"
 	PublicApigeeServer = "api.enterprise.apigee.com"

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"mime"
 	"net/http"
 )
 
@@ -66,7 +65,7 @@ func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	requestPath := fmt.Sprintf(client.EnvironmentKVMPath, c.Organization, newEnvironmentKVM.EnvironmentName)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
@@ -146,7 +145,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	//Public Apigee requires entries to be added/changed individually
 	if c.IsPublic() {

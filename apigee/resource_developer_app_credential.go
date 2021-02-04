@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"mime"
 	"net/http"
 	"regexp"
 )
@@ -90,7 +89,7 @@ func resourceDeveloperAppCredentialCreate(ctx context.Context, d *schema.Resourc
 	}
 	requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathCreate, c.Organization, newDeveloperAppCredential.DeveloperEmail, newDeveloperAppCredential.AppName)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
@@ -225,7 +224,7 @@ func resourceDeveloperAppCredentialUpdate(ctx context.Context, d *schema.Resourc
 	}
 	requestPath := fmt.Sprintf(client.DeveloperAppCredentialPathGet, c.Organization, developerEmail, appName, key)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {

@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"mime"
 	"net/http"
 	"regexp"
 )
@@ -64,7 +63,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	requestPath := fmt.Sprintf(client.UserPath)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
@@ -120,7 +119,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	}
 	requestPath := fmt.Sprintf(client.UserPathGet, d.Id())
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
 	if err != nil {

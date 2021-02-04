@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"mime"
 	"net/http"
 	"regexp"
 )
@@ -65,7 +64,7 @@ func resourceCompanyDeveloperCreate(ctx context.Context, d *schema.ResourceData,
 	}
 	requestPath := fmt.Sprintf(client.CompanyDeveloperPath, c.Organization, newCompanyDeveloper.CompanyName)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
@@ -146,7 +145,7 @@ func resourceCompanyDeveloperUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 	requestPath := fmt.Sprintf(client.CompanyDeveloperPath, c.Organization, companyName)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {

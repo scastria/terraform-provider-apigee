@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"mime"
 	"net/http"
 )
 
@@ -87,7 +86,7 @@ func resourceCompanyAppCredentialCreate(ctx context.Context, d *schema.ResourceD
 	}
 	requestPath := fmt.Sprintf(client.CompanyAppCredentialPathCreate, c.Organization, newCompanyAppCredential.CompanyName, newCompanyAppCredential.AppName)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
@@ -222,7 +221,7 @@ func resourceCompanyAppCredentialUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	requestPath := fmt.Sprintf(client.CompanyAppCredentialPathGet, c.Organization, companyName, appName, key)
 	requestHeaders := http.Header{
-		headers.ContentType: []string{mime.TypeByExtension(".json")},
+		headers.ContentType: []string{client.ApplicationJson},
 	}
 	_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
 	if err != nil {
