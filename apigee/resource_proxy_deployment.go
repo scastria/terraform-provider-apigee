@@ -118,6 +118,12 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 	envName, proxyName := client.ProxyDeploymentDecodeId(d.Id())
 	c := m.(*client.Client)
+	//Grab revision of existing deployment in case I need to manually undeploy later if the basepath has changed
+	prevRevision := 0
+	if d.HasChange("revision") {
+		o, _ := d.GetChange("revision")
+		prevRevision = o.(int)
+	}
 	revision := d.Get("revision").(int)
 	delay := d.Get("delay").(int)
 	requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
@@ -133,6 +139,14 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	_, err := c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, bytes.NewBufferString(requestForm.Encode()))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	//Force undeployment of previous revision, ignore errors if undeployed by override = true above
+	if prevRevision != 0 {
+		requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, prevRevision)
+		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+		if err != nil {
+			//Ignore errors
+		}
 	}
 	return diags
 }
