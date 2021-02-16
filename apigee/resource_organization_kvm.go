@@ -33,11 +33,20 @@ func resourceOrganizationKVM() *schema.Resource {
 				ForceNew: true,
 			},
 			"entry": {
-				Type:     schema.TypeMap,
-				Optional: true,
+				Type:          schema.TypeMap,
+				Optional:      true,
+				ConflictsWith: []string{"sensitive_entry"},
 				Elem: &schema.Schema{
-					Type:      schema.TypeString,
-					Sensitive: true,
+					Type: schema.TypeString,
+				},
+			},
+			"sensitive_entry": {
+				Type:          schema.TypeMap,
+				Optional:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{"entry"},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 		},
@@ -75,7 +84,12 @@ func fillOrganizationKVM(c *client.KVM, d *schema.ResourceData) {
 	if ok {
 		c.Encrypted = encrypted.(bool)
 	}
-	e, ok := d.GetOk("entry")
+	var e interface{}
+	if c.Encrypted {
+		e, ok = d.GetOk("sensitive_entry")
+	} else {
+		e, ok = d.GetOk("entry")
+	}
 	if ok {
 		entries := e.(map[string]interface{})
 		for name, value := range entries {
@@ -107,11 +121,16 @@ func resourceOrganizationKVMRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 	d.Set("name", d.Id())
+	d.Set("encrypted", retVal.Encrypted)
 	entries := map[string]string{}
 	for _, e := range retVal.Entries {
 		entries[e.Name] = e.Value
 	}
-	d.Set("entry", entries)
+	if retVal.Encrypted {
+		d.Set("sensitive_entry", entries)
+	} else {
+		d.Set("entry", entries)
+	}
 	return diags
 }
 
@@ -120,7 +139,14 @@ func resourceOrganizationKVMUpdate(ctx context.Context, d *schema.ResourceData, 
 	c := m.(*client.Client)
 	//All other properties besides entries are ForceNew so just handle entries here
 	//Check for removal of entries
-	o, n := d.GetChange("entry")
+	encrypted := d.Get("encrypted").(bool)
+	var o interface{}
+	var n interface{}
+	if encrypted {
+		o, n = d.GetChange("sensitive_entry")
+	} else {
+		o, n = d.GetChange("entry")
+	}
 	oldE := o.(map[string]interface{})
 	newE := n.(map[string]interface{})
 	for oldKey, _ := range oldE {
