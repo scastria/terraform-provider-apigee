@@ -52,10 +52,6 @@ func resourceRolePermissionCreate(ctx context.Context, d *schema.ResourceData, m
 	buf := bytes.Buffer{}
 	permSet := d.Get("permissions").(*schema.Set)
 	permList := convertSetToArray(permSet)
-	if len(permList) == 0 {
-		d.SetId("")
-		return diag.Errorf("permissions must contain at least 1 value")
-	}
 	newRolePermission := client.RolePermission{
 		RoleName:    d.Get("role_name").(string),
 		Path:        d.Get("path").(string),
