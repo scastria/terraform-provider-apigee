@@ -87,7 +87,12 @@ func resourceSharedFlowDeploymentRead(ctx context.Context, d *schema.ResourceDat
 		}
 		return diag.FromErr(err)
 	}
-	retVal := &client.SharedFlowDeployment{}
+	var retVal interface{}
+	if c.IsGoogle() {
+		retVal = &client.GoogleSharedFlowDeployment{}
+	} else {
+		retVal = &client.SharedFlowDeployment{}
+	}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		d.SetId("")
@@ -95,9 +100,16 @@ func resourceSharedFlowDeploymentRead(ctx context.Context, d *schema.ResourceDat
 	}
 	d.Set("environment_name", envName)
 	d.Set("shared_flow_name", sharedFlowName)
+	lastRevision := ""
 	//Retrieve the latest revision deployed as THE revision, assumes array is sorted
-	lastRevision := retVal.Revisions[len(retVal.Revisions)-1]
-	revision, _ := strconv.Atoi(lastRevision.Name)
+	if c.IsGoogle() {
+		googleRetVal := retVal.(*client.GoogleSharedFlowDeployment)
+		lastRevision = googleRetVal.Deployments[len(googleRetVal.Deployments)-1].Revision
+	} else {
+		oldRetVal := retVal.(*client.SharedFlowDeployment)
+		lastRevision = oldRetVal.Revisions[len(oldRetVal.Revisions)-1].Name
+	}
+	revision, _ := strconv.Atoi(lastRevision)
 	d.Set("revision", revision)
 	return diags
 }
@@ -111,7 +123,9 @@ func resourceSharedFlowDeploymentUpdate(ctx context.Context, d *schema.ResourceD
 	requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, envName, sharedFlowName, revision)
 	requestForm := url.Values{
 		"override": []string{strconv.FormatBool(true)},
-		"delay":    []string{strconv.Itoa(delay)},
+	}
+	if !c.IsGoogle() {
+		requestForm["delay"] = []string{strconv.Itoa(delay)}
 	}
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.FormEncoded},
@@ -133,14 +147,32 @@ func resourceSharedFlowDeploymentDelete(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	envDeployments := &client.SharedFlowDeployment{}
+	var envDeployments interface{}
+	if c.IsGoogle() {
+		envDeployments = &client.GoogleSharedFlowDeployment{}
+	} else {
+		envDeployments = &client.SharedFlowDeployment{}
+	}
 	err = json.NewDecoder(body).Decode(envDeployments)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	var deployedRevisions []int
+	if c.IsGoogle() {
+		googleEnvDeployments := envDeployments.(*client.GoogleSharedFlowDeployment)
+		for _, dr := range googleEnvDeployments.Deployments {
+			revision, _ := strconv.Atoi(dr.Revision)
+			deployedRevisions = append(deployedRevisions, revision)
+		}
+	} else {
+		oldEnvDeployments := envDeployments.(*client.SharedFlowDeployment)
+		for _, rev := range oldEnvDeployments.Revisions {
+			revision, _ := strconv.Atoi(rev.Name)
+			deployedRevisions = append(deployedRevisions, revision)
+		}
+	}
 	//Delete each deployment
-	for _, rev := range envDeployments.Revisions {
-		revision, _ := strconv.Atoi(rev.Name)
+	for _, revision := range deployedRevisions {
 		requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, envName, sharedFlowName, revision)
 		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 		if err != nil {
