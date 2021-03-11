@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/go-http-utils/headers"
 	"io"
@@ -14,13 +15,15 @@ import (
 )
 
 const (
-	FormEncoded        = "application/x-www-form-urlencoded"
-	ApplicationJson    = "application/json"
-	ApplicationXml     = "application/xml"
-	IdSeparator        = ":"
-	Bearer             = "Bearer"
-	PublicApigeeServer = "api.enterprise.apigee.com"
-	GoogleApigeeServer = "apigee.googleapis.com"
+	FormEncoded          = "application/x-www-form-urlencoded"
+	ApplicationJson      = "application/json"
+	ApplicationXml       = "application/xml"
+	IdSeparator          = ":"
+	Basic                = "Basic"
+	Bearer               = "Bearer"
+	SSOClientCredentials = "ZWRnZWNsaTplZGdlY2xpc2VjcmV0"
+	PublicApigeeServer   = "api.enterprise.apigee.com"
+	GoogleApigeeServer   = "apigee.googleapis.com"
 )
 
 type Client struct {
@@ -29,20 +32,69 @@ type Client struct {
 	accessToken  string
 	server       string
 	port         int
+	oauthServer  string
+	oauthPort    int
 	Organization string
 	httpClient   *http.Client
 }
 
-func NewClient(username string, password string, accessToken string, server string, port int, organization string) *Client {
-	return &Client{
+func NewClient(username string, password string, accessToken string, server string, port int, oauthServer string, oauthPort int, organization string) (client *Client, err error) {
+	c := &Client{
 		username:     username,
 		password:     password,
 		accessToken:  accessToken,
 		server:       server,
 		port:         port,
+		oauthServer:  oauthServer,
+		oauthPort:    oauthPort,
 		Organization: organization,
 		httpClient:   &http.Client{},
 	}
+	//Check for oauth authentication and try to get access token
+	if c.oauthServer != "" {
+		log.Print("Apigee Management API: Obtaining access token...")
+		requestURL := fmt.Sprintf("https://%s:%d/%s", c.oauthServer, c.oauthPort, OauthTokenPath)
+		requestForm := url.Values{
+			"grant_type": []string{"password"},
+			"username":   []string{c.username},
+			"password":   []string{c.password},
+		}
+		req, err := http.NewRequest(http.MethodPost, requestURL, bytes.NewBufferString(requestForm.Encode()))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set(headers.Authorization, Basic+" "+SSOClientCredentials)
+		req.Header.Set(headers.ContentType, FormEncoded)
+		requestDump, err := httputil.DumpRequest(req, true)
+		if err != nil {
+			log.Print("Apigee Management API:")
+			log.Print(err)
+		} else {
+			log.Print("Apigee Management API: " + string(requestDump))
+		}
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			return nil, &RequestError{StatusCode: http.StatusInternalServerError, Err: err}
+		}
+		if (resp.StatusCode < http.StatusOK) || (resp.StatusCode >= http.StatusMultipleChoices) {
+			respBody := new(bytes.Buffer)
+			_, err := respBody.ReadFrom(resp.Body)
+			if err != nil {
+				return nil, &RequestError{StatusCode: resp.StatusCode, Err: err}
+			}
+			return nil, &RequestError{StatusCode: resp.StatusCode, Err: fmt.Errorf("%s", respBody.String())}
+		}
+		//Parse body to extract access_token
+		token := &OauthToken{}
+		err = json.NewDecoder(resp.Body).Decode(token)
+		if err != nil {
+			return nil, err
+		}
+		log.Print("Apigee Management API: Received access token: " + token.AccessToken)
+		//Inject token as access_token for client for all future calls
+		c.accessToken = token.AccessToken
+	}
+	return c, nil
 }
 
 func (c *Client) IsPublic() bool {

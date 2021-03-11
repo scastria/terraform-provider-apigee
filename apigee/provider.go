@@ -31,7 +31,7 @@ func Provider() *schema.Provider {
 				Optional:      true,
 				Sensitive:     true,
 				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_ACCESS_TOKEN", nil),
-				ConflictsWith: []string{"username", "password"},
+				ConflictsWith: []string{"username", "password", "oauth_server"},
 			},
 			"server": {
 				Type:        schema.TypeString,
@@ -42,6 +42,19 @@ func Provider() *schema.Provider {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("APIGEE_PORT", 443),
+				ValidateFunc: validation.IntBetween(0, 65535),
+			},
+			"oauth_server": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_OAUTH_SERVER", nil),
+				ConflictsWith: []string{"access_token"},
+				RequiredWith:  []string{"username", "password"},
+			},
+			"oauth_port": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("APIGEE_OAUTH_PORT", 443),
 				ValidateFunc: validation.IntBetween(0, 65535),
 			},
 			"organization": {
@@ -91,13 +104,19 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	accessToken := d.Get("access_token").(string)
 	server := d.Get("server").(string)
 	port := d.Get("port").(int)
+	oauthServer := d.Get("oauth_server").(string)
+	oauthPort := d.Get("oauth_port").(int)
 	organization := d.Get("organization").(string)
 
 	//Check for valid authentication
 	if (username == "") && (password == "") && (accessToken == "") {
-		return nil, diag.Errorf("You must specify either username/password for Basic Authentication or access_token")
+		return nil, diag.Errorf("You must specify either username/password for Basic Authentication, username/password/oauth_server for OAuth Authentication, or access_token")
 	}
 
 	var diags diag.Diagnostics
-	return client.NewClient(username, password, accessToken, server, port, organization), diags
+	c, err := client.NewClient(username, password, accessToken, server, port, oauthServer, oauthPort, organization)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+	return c, diags
 }
