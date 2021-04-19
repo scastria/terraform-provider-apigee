@@ -38,6 +38,11 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("APIGEE_SERVER", client.PublicApigeeServer),
 			},
+			"server_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("APIGEE_SERVER_PATH", client.ServerPath),
+			},
 			"port": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -50,6 +55,11 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_OAUTH_SERVER", nil),
 				ConflictsWith: []string{"access_token"},
 				RequiredWith:  []string{"username", "password"},
+			},
+			"oauth_server_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("APIGEE_OAUTH_SERVER_PATH", nil),
 			},
 			"oauth_port": {
 				Type:         schema.TypeInt,
@@ -103,8 +113,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	password := d.Get("password").(string)
 	accessToken := d.Get("access_token").(string)
 	server := d.Get("server").(string)
+	serverPath := d.Get("server_path").(string)
 	port := d.Get("port").(int)
 	oauthServer := d.Get("oauth_server").(string)
+	oauthServerPath := d.Get("oauth_server_path").(string)
 	oauthPort := d.Get("oauth_port").(int)
 	organization := d.Get("organization").(string)
 
@@ -114,7 +126,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	var diags diag.Diagnostics
-	c, err := client.NewClient(username, password, accessToken, server, port, oauthServer, oauthPort, organization)
+	c, err := client.NewClient(username, password, accessToken, server, serverPath, port, oauthServer, oauthServerPath, oauthPort, organization)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}

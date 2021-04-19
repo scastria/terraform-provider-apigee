@@ -24,36 +24,46 @@ const (
 	SSOClientCredentials = "ZWRnZWNsaTplZGdlY2xpc2VjcmV0"
 	PublicApigeeServer   = "api.enterprise.apigee.com"
 	GoogleApigeeServer   = "apigee.googleapis.com"
+	ServerPath           = "v1"
 )
 
 type Client struct {
-	username     string
-	password     string
-	accessToken  string
-	server       string
-	port         int
-	oauthServer  string
-	oauthPort    int
-	Organization string
-	httpClient   *http.Client
+	username        string
+	password        string
+	accessToken     string
+	server          string
+	serverPath      string
+	port            int
+	oauthServer     string
+	oauthServerPath string
+	oauthPort       int
+	Organization    string
+	httpClient      *http.Client
 }
 
-func NewClient(username string, password string, accessToken string, server string, port int, oauthServer string, oauthPort int, organization string) (client *Client, err error) {
+func NewClient(username string, password string, accessToken string, server string, serverPath string, port int, oauthServer string, oauthServerPath string, oauthPort int, organization string) (client *Client, err error) {
 	c := &Client{
-		username:     username,
-		password:     password,
-		accessToken:  accessToken,
-		server:       server,
-		port:         port,
-		oauthServer:  oauthServer,
-		oauthPort:    oauthPort,
-		Organization: organization,
-		httpClient:   &http.Client{},
+		username:        username,
+		password:        password,
+		accessToken:     accessToken,
+		server:          server,
+		serverPath:      serverPath,
+		port:            port,
+		oauthServer:     oauthServer,
+		oauthServerPath: oauthServerPath,
+		oauthPort:       oauthPort,
+		Organization:    organization,
+		httpClient:      &http.Client{},
 	}
 	//Check for oauth authentication and try to get access token
 	if c.oauthServer != "" {
 		log.Print("Apigee Management API: Obtaining access token...")
-		requestURL := fmt.Sprintf("https://%s:%d/%s", c.oauthServer, c.oauthPort, OauthTokenPath)
+		var requestURL string
+		if c.oauthServerPath != "" {
+			requestURL = fmt.Sprintf("https://%s:%d/%s/%s", c.oauthServer, c.oauthPort, c.oauthServerPath, OauthTokenPath)
+		} else {
+			requestURL = fmt.Sprintf("https://%s:%d/%s", c.oauthServer, c.oauthPort, OauthTokenPath)
+		}
 		requestForm := url.Values{
 			"grant_type": []string{"password"},
 			"username":   []string{c.username},
@@ -158,7 +168,7 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 
 // TODO: Allow non-SSL
 func (c *Client) requestPath(path string) string {
-	return fmt.Sprintf("https://%s:%d/v1/%s", c.server, c.port, path)
+	return fmt.Sprintf("https://%s:%d/%s/%s", c.server, c.port, c.serverPath, path)
 }
 
 func GetBuffer(filename string) (*bytes.Buffer, error) {
