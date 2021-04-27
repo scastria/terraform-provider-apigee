@@ -24,7 +24,6 @@ type Alias struct {
 	IgnoreNewlineValidation bool   `json:"ignore_newline_validation"`
 }
 
-
 func (a *Alias) AliasEncodeId() string {
 	return a.KeystoreName + IdSeparator + a.Name
 }

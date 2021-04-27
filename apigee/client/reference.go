@@ -8,14 +8,11 @@ const (
 )
 
 type Reference struct {
-	EnvironmentName string     `json:"-"`
-	Name            string     `json:"name"`
-	Refers            string     `json:"refers"`
-	ResourceType            string     `json:"resourceType"`
-	//OverflowToDisk                    bool       `json:"overflowToDisk,omitempty"`
+	EnvironmentName string `json:"-"`
+	Name            string `json:"name"`
+	Refers          string `json:"refers"`
+	ResourceType    string `json:"resourceType"`
 }
-
-
 
 func (c *Reference) ReferenceEncodeId() string {
 	return c.EnvironmentName + IdSeparator + c.Name

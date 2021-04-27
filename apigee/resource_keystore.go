@@ -41,7 +41,7 @@ func resourceKeystoreCreate(ctx context.Context, d *schema.ResourceData, m inter
 	buf := bytes.Buffer{}
 	newKeystore := client.Keystore{
 		EnvironmentName: d.Get("environment_name").(string),
-		Name:            d.Get("name").(string),	
+		Name:            d.Get("name").(string),
 	}
 	err := json.NewEncoder(&buf).Encode(newKeystore)
 	if err != nil {
@@ -60,7 +60,6 @@ func resourceKeystoreCreate(ctx context.Context, d *schema.ResourceData, m inter
 	d.SetId(newKeystore.KeystoreEncodeId())
 	return diags
 }
-
 
 func resourceKeystoreRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -96,7 +95,6 @@ func resourceKeystoreUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	upKeystore := client.Keystore{
 		EnvironmentName: envName,
 		Name:            name,
-
 	}
 	err := json.NewEncoder(&buf).Encode(upKeystore)
 	if err != nil {

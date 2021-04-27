@@ -8,8 +8,8 @@ const (
 )
 
 type Keystore struct {
-	EnvironmentName string     `json:"-"`
-	Name            string     `json:"name"`
+	EnvironmentName string `json:"-"`
+	Name            string `json:"name"`
 }
 
 func (c *Keystore) KeystoreEncodeId() string {

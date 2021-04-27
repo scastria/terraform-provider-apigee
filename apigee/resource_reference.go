@@ -36,7 +36,7 @@ func resourceReference() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-            "resource_type": {
+			"resource_type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -72,7 +72,6 @@ func resourceReferenceCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return diags
 }
 
-
 func resourceReferenceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	envName, name := client.ReferenceDecodeId(d.Id())
@@ -95,8 +94,8 @@ func resourceReferenceRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	d.Set("environment_name", envName)
 	d.Set("name", name)
-    d.Set("refers", retVal.Refers)
-    d.Set("resource_type", retVal.ResourceType)
+	d.Set("refers", retVal.Refers)
+	d.Set("resource_type", retVal.ResourceType)
 
 	return diags
 }
@@ -109,7 +108,6 @@ func resourceReferenceUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	upReference := client.Reference{
 		EnvironmentName: envName,
 		Name:            name,
-
 	}
 	fillReference(&upReference, d)
 	err := json.NewEncoder(&buf).Encode(upReference)
@@ -132,10 +130,10 @@ func fillReference(c *client.Reference, d *schema.ResourceData) {
 	if ok {
 		c.Refers = refers.(string)
 	}
-    resourceType, ok := d.GetOk("resoure_type")
+	resourceType, ok := d.GetOk("resoure_type")
 	if ok {
 		c.ResourceType = resourceType.(string)
-	}	
+	}
 }
 
 func resourceReferenceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

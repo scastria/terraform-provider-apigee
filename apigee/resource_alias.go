@@ -9,13 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
-	"github.com/scastria/terraform-provider-apigee/apigee/client"
 )
 
 func resourceAlias() *schema.Resource {
@@ -277,7 +277,7 @@ func resourceAliasDelete(ctx context.Context, d *schema.ResourceData, m interfac
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	keystore_name, name := client.AliasDecodeId(d.Id())
-	requestPath := fmt.Sprintf(client.AliasPathGet, c.Organization, d.Get("environment_name").(string),keystore_name,name)
+	requestPath := fmt.Sprintf(client.AliasPathGet, c.Organization, d.Get("environment_name").(string), keystore_name, name)
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
