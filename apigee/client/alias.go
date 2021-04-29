@@ -25,10 +25,10 @@ type Alias struct {
 }
 
 func (a *Alias) AliasEncodeId() string {
-	return a.KeystoreName + IdSeparator + a.Name
+	return a.EnvironmentName + IdSeparator + a.KeystoreName + IdSeparator + a.Name
 }
 
-func AliasDecodeId(s string) (string, string) {
+func AliasDecodeId(s string) (string, string, string) {
 	tokens := strings.Split(s, IdSeparator)
-	return tokens[0], tokens[1]
+	return tokens[0], tokens[1], tokens[2]
 }

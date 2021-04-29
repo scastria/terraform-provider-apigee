@@ -206,8 +206,8 @@ func resourceAliasCreate(ctx context.Context, d *schema.ResourceData, m interfac
 func resourceAliasRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	keystore_name, name := client.AliasDecodeId(d.Id())
-	requestPath := fmt.Sprintf(client.AliasPathGet, c.Organization, d.Get("environment_name").(string), keystore_name, name)
+	envName, keystoreName, name := client.AliasDecodeId(d.Id())
+	requestPath := fmt.Sprintf(client.AliasPathGet, c.Organization, envName, keystoreName, name)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -276,8 +276,8 @@ func resourceAliasUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 func resourceAliasDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	keystore_name, name := client.AliasDecodeId(d.Id())
-	requestPath := fmt.Sprintf(client.AliasPathGet, c.Organization, d.Get("environment_name").(string), keystore_name, name)
+	envName, keystoreName, name := client.AliasDecodeId(d.Id())
+	requestPath := fmt.Sprintf(client.AliasPathGet, c.Organization, envName , keystoreName, name)
 	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)

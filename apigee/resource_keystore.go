@@ -87,30 +87,6 @@ func resourceKeystoreRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return diags
 }
 
-func resourceKeystoreUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-	envName, name := client.KeystoreDecodeId(d.Id())
-	c := m.(*client.Client)
-	buf := bytes.Buffer{}
-	upKeystore := client.Keystore{
-		EnvironmentName: envName,
-		Name:            name,
-	}
-	err := json.NewEncoder(&buf).Encode(upKeystore)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	requestPath := fmt.Sprintf(client.KeystorePathGet, c.Organization, envName, name)
-	requestHeaders := http.Header{
-		headers.ContentType: []string{client.ApplicationJson},
-	}
-	_, err = c.HttpRequest(http.MethodPut, requestPath, nil, requestHeaders, &buf)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
-}
-
 func resourceKeystoreDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	envName, name := client.KeystoreDecodeId(d.Id())
