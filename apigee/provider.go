@@ -100,6 +100,7 @@ func Provider() *schema.Provider {
 			"apigee_environment_resource_file":  resourceEnvironmentResourceFile(),
 			"apigee_proxy_resource_file":        resourceProxyResourceFile(),
 			"apigee_proxy_policy":               resourceProxyPolicy(),
+			"apigee_alias":                      resourceAlias(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"apigee_user": dataSourceUser(),
