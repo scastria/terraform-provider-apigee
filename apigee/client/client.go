@@ -204,34 +204,3 @@ func GetMultiPartBuffer(filename string, key string) (*multipart.Writer, *bytes.
 	mp.Close()
 	return mp, &buf, nil
 }
-
-//Credit goes to Attila O., https://stackoverflow.com/a/20397167
-func GetMultiPartBufferForMultipleValues(values map[string]io.Reader) (*multipart.Writer, *bytes.Buffer, error) {
-    var err error	
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
-	for key, r := range values {
-		var fw io.Writer
-		if x, ok := r.(io.Closer); ok {
-			defer x.Close()
-		}
-		// Add an files
-		if x, ok := r.(*os.File); ok {
-			if fw, err = w.CreateFormFile(key, x.Name()); err != nil {
-				return nil, nil, err
-			}
-		} else {
-			// Add other fields
-			if fw, err = w.CreateFormField(key); err != nil {
-				return nil, nil, err
-			}
-		}
-		if _, err = io.Copy(fw, r); err != nil {
-			return nil, nil, err
-		}
-
-	}
-	w.Close()
-
-	return w, &b, nil
-}

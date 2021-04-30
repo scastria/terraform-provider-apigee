@@ -1,11 +1,11 @@
 ---
 subcategory: "Admin"
 ---
-# Resource: reference
+# Resource: apigee_reference
 Represents a reference in an environment
 ## Example usage
 ```hcl
-resource "testing_reference" "testingReference" {
+resource "apigee_reference" "referenceExample" {
   environment_name = "dev"
   name = "refName"
   refers = "refRefers"
@@ -16,7 +16,7 @@ resource "testing_reference" "testingReference" {
 * `environment_name` - **(Required, ForceNew, String)** The name of an environment
 * `name` - **(Required, ForceNew, String)** The name of the reference
 * `refers` - **(Required, String)** Name of the keystore or truststore being referenced
-* `recource_type` - **(Required, String)**  Set to KeyStore or TrustStore
+* `resource_type` - **(Required, ForceNew, String)**  Set to KeyStore or TrustStore
 ## Attribute Reference
 * `id` - Same as `environment_name`:`name`
 ## Import

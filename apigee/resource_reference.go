@@ -8,6 +8,7 @@ import (
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
 	"net/http"
 )
@@ -37,8 +38,10 @@ func resourceReference() *schema.Resource {
 				Required: true,
 			},
 			"resource_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"KeyStore", "TrustStore"}, false),
+				ForceNew:     true,
 			},
 		},
 	}
@@ -130,7 +133,7 @@ func fillReference(c *client.Reference, d *schema.ResourceData) {
 	if ok {
 		c.Refers = refers.(string)
 	}
-	resourceType, ok := d.GetOk("resoure_type")
+	resourceType, ok := d.GetOk("resource_type")
 	if ok {
 		c.ResourceType = resourceType.(string)
 	}
