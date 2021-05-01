@@ -40,8 +40,8 @@ func resourceReference() *schema.Resource {
 			"resource_type": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"KeyStore", "TrustStore"}, false),
 				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice([]string{"KeyStore", "TrustStore"}, false),
 			},
 		},
 	}
@@ -99,7 +99,6 @@ func resourceReferenceRead(ctx context.Context, d *schema.ResourceData, m interf
 	d.Set("name", name)
 	d.Set("refers", retVal.Refers)
 	d.Set("resource_type", retVal.ResourceType)
-
 	return diags
 }
 
@@ -111,8 +110,9 @@ func resourceReferenceUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	upReference := client.Reference{
 		EnvironmentName: envName,
 		Name:            name,
+		Refers:          d.Get("refers").(string),
+		ResourceType:    d.Get("resource_type").(string),
 	}
-	fillReference(&upReference, d)
 	err := json.NewEncoder(&buf).Encode(upReference)
 	if err != nil {
 		return diag.FromErr(err)
@@ -126,17 +126,6 @@ func resourceReferenceUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 	return diags
-}
-
-func fillReference(c *client.Reference, d *schema.ResourceData) {
-	refers, ok := d.GetOk("refers")
-	if ok {
-		c.Refers = refers.(string)
-	}
-	resourceType, ok := d.GetOk("resource_type")
-	if ok {
-		c.ResourceType = resourceType.(string)
-	}
 }
 
 func resourceReferenceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

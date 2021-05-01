@@ -83,7 +83,6 @@ func resourceKeystoreRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	d.Set("environment_name", envName)
 	d.Set("name", name)
-
 	return diags
 }
 

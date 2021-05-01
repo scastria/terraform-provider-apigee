@@ -5,7 +5,7 @@ subcategory: "Admin"
 Represents a keystore or truststore in an environment
 ## Example usage
 ```hcl
-resource "apigee_keystore" "keystoreExample" {
+resource "apigee_keystore" "example" {
   environment_name = "dev"
   name = "keystoreName"
 }
@@ -16,4 +16,4 @@ resource "apigee_keystore" "keystoreExample" {
 ## Attribute Reference
 * `id` - Same as `environment_name`:`name`
 ## Import
-Keystore can be imported using a proper value of `id` as described above
+Keystores can be imported using a proper value of `id` as described above

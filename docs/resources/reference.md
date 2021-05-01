@@ -5,10 +5,14 @@ subcategory: "Admin"
 Represents a reference in an environment
 ## Example usage
 ```hcl
-resource "apigee_reference" "referenceExample" {
+resource "apigee_keystore" "MyKeystore" {
+  environment_name = "dev"
+  name = "keystoreName"
+}
+resource "apigee_reference" "example" {
   environment_name = "dev"
   name = "refName"
-  refers = "refRefers"
+  refers = apigee_keystore.MyKeystore.name
   resource_type = "KeyStore"
 }
 ```
