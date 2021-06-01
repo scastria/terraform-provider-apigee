@@ -59,7 +59,9 @@ func resourceProxyCustomDiff(ctx context.Context, diff *schema.ResourceDiff, m i
 
 func importProxyRevision(c *client.Client, name string, bundle string) (*client.ProxyRevision, error) {
 	//Turn filename into multi part buffer
-	mp, buf, err := client.GetMultiPartBuffer(bundle, "bundle")
+	mp, buf, err := client.GetMultiPartBuffer(map[string]client.FormData{
+		"bundle": client.FormData{Filename: bundle},
+	})
 	if err != nil {
 		return nil, err
 	}

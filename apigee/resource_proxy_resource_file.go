@@ -68,7 +68,9 @@ func resourceProxyResourceFileCreate(ctx context.Context, d *schema.ResourceData
 	}
 	file := d.Get("file").(string)
 	//Turn filename into multi part buffer
-	mp, buf, err := client.GetMultiPartBuffer(file, "file")
+	mp, buf, err := client.GetMultiPartBuffer(map[string]client.FormData{
+		"file": client.FormData{Filename: file},
+	})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -136,7 +138,9 @@ func resourceProxyResourceFileUpdate(ctx context.Context, d *schema.ResourceData
 	c := m.(*client.Client)
 	file := d.Get("file").(string)
 	//Turn filename into multi part buffer
-	mp, buf, err := client.GetMultiPartBuffer(file, "file")
+	mp, buf, err := client.GetMultiPartBuffer(map[string]client.FormData{
+		"file": client.FormData{Filename: file},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

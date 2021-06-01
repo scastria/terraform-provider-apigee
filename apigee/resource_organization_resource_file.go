@@ -54,7 +54,9 @@ func resourceOrganizationResourceFileCreate(ctx context.Context, d *schema.Resou
 	}
 	file := d.Get("file").(string)
 	//Turn filename into multi part buffer
-	mp, buf, err := client.GetMultiPartBuffer(file, "file")
+	mp, buf, err := client.GetMultiPartBuffer(map[string]client.FormData{
+		"file": client.FormData{Filename: file},
+	})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
@@ -120,7 +122,9 @@ func resourceOrganizationResourceFileUpdate(ctx context.Context, d *schema.Resou
 	c := m.(*client.Client)
 	file := d.Get("file").(string)
 	//Turn filename into multi part buffer
-	mp, buf, err := client.GetMultiPartBuffer(file, "file")
+	mp, buf, err := client.GetMultiPartBuffer(map[string]client.FormData{
+		"file": client.FormData{Filename: file},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

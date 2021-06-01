@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
 )
 
 const (
@@ -39,6 +40,10 @@ type Client struct {
 	oauthPort       int
 	Organization    string
 	httpClient      *http.Client
+}
+type FormData struct {
+	Filename string
+	Text     string
 }
 
 func NewClient(username string, password string, accessToken string, server string, serverPath string, port int, oauthServer string, oauthServerPath string, oauthPort int, organization string) (client *Client, err error) {
@@ -185,21 +190,36 @@ func GetBuffer(filename string) (*bytes.Buffer, error) {
 	return &buf, nil
 }
 
-func GetMultiPartBuffer(filename string, key string) (*multipart.Writer, *bytes.Buffer, error) {
+func GetMultiPartBuffer(formData map[string]FormData) (*multipart.Writer, *bytes.Buffer, error) {
 	buf := bytes.Buffer{}
 	mp := multipart.NewWriter(&buf)
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer file.Close()
-	fw, err := mp.CreateFormFile(key, filename)
-	if err != nil {
-		return nil, nil, err
-	}
-	_, err = io.Copy(fw, file)
-	if err != nil {
-		return nil, nil, err
+	for key, fd := range formData {
+		if fd.Filename != "" {
+			//Handle files
+			file, err := os.Open(fd.Filename)
+			if err != nil {
+				return nil, nil, err
+			}
+			defer file.Close()
+			fw, err := mp.CreateFormFile(key, fd.Filename)
+			if err != nil {
+				return nil, nil, err
+			}
+			_, err = io.Copy(fw, file)
+			if err != nil {
+				return nil, nil, err
+			}
+		} else {
+			//Handle strings
+			fw, err := mp.CreateFormField(key)
+			if err != nil {
+				return nil, nil, err
+			}
+			_, err = io.Copy(fw, strings.NewReader(fd.Text))
+			if err != nil {
+				return nil, nil, err
+			}
+		}
 	}
 	mp.Close()
 	return mp, &buf, nil
