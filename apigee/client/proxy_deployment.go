@@ -3,28 +3,28 @@ package client
 import "strings"
 
 const (
-	ProxyDeploymentPath         = "organizations/%s/environments/%s/apis/%s/deployments"
-	ProxyDeploymentRevisionPath = "organizations/%s/environments/%s/apis/%s/revisions/%d/deployments"
+	ProxyEnvironmentDeploymentPath         = "organizations/%s/environments/%s/apis/%s/deployments"
+	ProxyEnvironmentDeploymentRevisionPath = "organizations/%s/environments/%s/apis/%s/revisions/%d/deployments"
 )
 
-type ProxyDeployment struct {
-	ProxyName       string                    `json:"name"`
-	EnvironmentName string                    `json:"environment"`
-	Revisions       []ProxyRevisionDeployment `json:"revision"`
+type ProxyEnvironmentDeployment struct {
+	ProxyName       string                               `json:"name"`
+	EnvironmentName string                               `json:"environment"`
+	Revisions       []ProxyEnvironmentRevisionDeployment `json:"revision"`
 }
-type ProxyRevisionDeployment struct {
+type ProxyEnvironmentRevisionDeployment struct {
 	Name string `json:"name"`
 }
-type GoogleProxyDeployment struct {
-	Deployments []GoogleProxyDeploymentDeployments `json:"deployments"`
+type GoogleProxyEnvironmentDeployment struct {
+	Deployments []GoogleProxyEnvironmentDeploymentDeployments `json:"deployments"`
 }
-type GoogleProxyDeploymentDeployments struct {
+type GoogleProxyEnvironmentDeploymentDeployments struct {
 	ProxyName       string `json:"apiProxy"`
 	EnvironmentName string `json:"environment"`
 	Revision        string `json:"revision"`
 }
 
-func (c *ProxyDeployment) ProxyDeploymentEncodeId() string {
+func (c *ProxyEnvironmentDeployment) ProxyDeploymentEncodeId() string {
 	return c.EnvironmentName + IdSeparator + c.ProxyName
 }
 

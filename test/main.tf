@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     apigee = {
-      versions = ["0.1"]
+      version = "0.1"
       source = "github.com/scastria/apigee"
     }
   }

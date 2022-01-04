@@ -144,10 +144,40 @@ func resourceProxyUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 func resourceProxyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.ProxyPathGet, c.Organization, d.Id())
-	_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+	//Assume that if this proxy is currently deployed to ANY environment, that it was deployed in a different
+	//TF configuration.  Therefore, that other TF configuration will handle the delete of the proxy so just
+	//report deletion to TF even though it was not deleted from Apigee.  This is a design decision which
+	//could be solved other ways, but would be much more complicated for the user.
+	//Get all deployments of this proxy to ANY environment
+	requestPath := fmt.Sprintf(client.ProxyDeploymentPath, c.Organization, d.Id())
+	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	var deployments interface{}
+	if c.IsGoogle() {
+		deployments = &client.GoogleProxyEnvironmentDeployment{}
+	} else {
+		deployments = &client.ProxyDeployments{}
+	}
+	err = json.NewDecoder(body).Decode(deployments)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	var numDeployments int
+	if c.IsGoogle() {
+		googleDeployments := deployments.(*client.GoogleProxyEnvironmentDeployment)
+		numDeployments = len(googleDeployments.Deployments)
+	} else {
+		oldDeployments := deployments.(*client.ProxyDeployments)
+		numDeployments = len(oldDeployments.Environments)
+	}
+	if numDeployments == 0 {
+		requestPath = fmt.Sprintf(client.ProxyPathGet, c.Organization, d.Id())
+		_, err = c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	d.SetId("")
 	return diags

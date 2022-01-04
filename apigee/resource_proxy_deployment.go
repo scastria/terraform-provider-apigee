@@ -58,12 +58,12 @@ func resourceProxyDelayDiff(k string, old string, n string, d *schema.ResourceDa
 func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
-	newProxyDeployment := client.ProxyDeployment{
+	newProxyDeployment := client.ProxyEnvironmentDeployment{
 		EnvironmentName: d.Get("environment_name").(string),
 		ProxyName:       d.Get("proxy_name").(string),
 	}
 	revision := d.Get("revision").(int)
-	requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, newProxyDeployment.EnvironmentName, newProxyDeployment.ProxyName, revision)
+	requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentRevisionPath, c.Organization, newProxyDeployment.EnvironmentName, newProxyDeployment.ProxyName, revision)
 	_, err := c.HttpRequest(http.MethodPost, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -77,7 +77,7 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	var diags diag.Diagnostics
 	envName, proxyName := client.ProxyDeploymentDecodeId(d.Id())
 	c := m.(*client.Client)
-	requestPath := fmt.Sprintf(client.ProxyDeploymentPath, c.Organization, envName, proxyName)
+	requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentPath, c.Organization, envName, proxyName)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
@@ -89,9 +89,9 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 	var retVal interface{}
 	if c.IsGoogle() {
-		retVal = &client.GoogleProxyDeployment{}
+		retVal = &client.GoogleProxyEnvironmentDeployment{}
 	} else {
-		retVal = &client.ProxyDeployment{}
+		retVal = &client.ProxyEnvironmentDeployment{}
 	}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
@@ -103,10 +103,10 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	lastRevision := ""
 	//Retrieve the latest revision deployed as THE revision, assumes array is sorted
 	if c.IsGoogle() {
-		googleRetVal := retVal.(*client.GoogleProxyDeployment)
+		googleRetVal := retVal.(*client.GoogleProxyEnvironmentDeployment)
 		lastRevision = googleRetVal.Deployments[len(googleRetVal.Deployments)-1].Revision
 	} else {
-		oldRetVal := retVal.(*client.ProxyDeployment)
+		oldRetVal := retVal.(*client.ProxyEnvironmentDeployment)
 		lastRevision = oldRetVal.Revisions[len(oldRetVal.Revisions)-1].Name
 	}
 	revision, _ := strconv.Atoi(lastRevision)
@@ -126,7 +126,7 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 	revision := d.Get("revision").(int)
 	delay := d.Get("delay").(int)
-	requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
+	requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
 	requestForm := url.Values{
 		"override": []string{strconv.FormatBool(true)},
 	}
@@ -142,7 +142,7 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 	//Force undeployment of previous revision, ignore errors if undeployed by override = true above
 	if prevRevision != 0 {
-		requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, prevRevision)
+		requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentRevisionPath, c.Organization, envName, proxyName, prevRevision)
 		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 		if err != nil {
 			//Ignore errors
@@ -156,16 +156,16 @@ func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, 
 	envName, proxyName := client.ProxyDeploymentDecodeId(d.Id())
 	c := m.(*client.Client)
 	//Get all deployments of this proxy to this environment
-	requestPath := fmt.Sprintf(client.ProxyDeploymentPath, c.Organization, envName, proxyName)
+	requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentPath, c.Organization, envName, proxyName)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	var envDeployments interface{}
 	if c.IsGoogle() {
-		envDeployments = &client.GoogleProxyDeployment{}
+		envDeployments = &client.GoogleProxyEnvironmentDeployment{}
 	} else {
-		envDeployments = &client.ProxyDeployment{}
+		envDeployments = &client.ProxyEnvironmentDeployment{}
 	}
 	err = json.NewDecoder(body).Decode(envDeployments)
 	if err != nil {
@@ -173,13 +173,13 @@ func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 	var deployedRevisions []int
 	if c.IsGoogle() {
-		googleEnvDeployments := envDeployments.(*client.GoogleProxyDeployment)
+		googleEnvDeployments := envDeployments.(*client.GoogleProxyEnvironmentDeployment)
 		for _, dr := range googleEnvDeployments.Deployments {
 			revision, _ := strconv.Atoi(dr.Revision)
 			deployedRevisions = append(deployedRevisions, revision)
 		}
 	} else {
-		oldEnvDeployments := envDeployments.(*client.ProxyDeployment)
+		oldEnvDeployments := envDeployments.(*client.ProxyEnvironmentDeployment)
 		for _, rev := range oldEnvDeployments.Revisions {
 			revision, _ := strconv.Atoi(rev.Name)
 			deployedRevisions = append(deployedRevisions, revision)
@@ -187,7 +187,7 @@ func resourceProxyDeploymentDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 	//Delete each deployment
 	for _, revision := range deployedRevisions {
-		requestPath := fmt.Sprintf(client.ProxyDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
+		requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentRevisionPath, c.Organization, envName, proxyName, revision)
 		_, err := c.HttpRequest(http.MethodDelete, requestPath, nil, nil, &bytes.Buffer{})
 		if err != nil {
 			return diag.FromErr(err)
