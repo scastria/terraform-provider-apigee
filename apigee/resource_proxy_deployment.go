@@ -46,6 +46,10 @@ func resourceProxyDeployment() *schema.Resource {
 				ValidateFunc:     validation.IntAtLeast(0),
 				DiffSuppressFunc: resourceProxyDelayDiff,
 			},
+			"service_account": {
+				Type:             schema.TypeString,
+				Optional:         true,
+			},
 		},
 	}
 }
@@ -61,6 +65,12 @@ func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, 
 	newProxyDeployment := client.ProxyEnvironmentDeployment{
 		EnvironmentName: d.Get("environment_name").(string),
 		ProxyName:       d.Get("proxy_name").(string),
+	}
+	if d.Get("service_account") != nil {
+		if !c.IsGoogle() {
+			return diag.Errorf("service_account cannot be set for non-Google organizations")
+		}
+		newProxyDeployment.ServiceAccount = d.Get("service_account").(string)
 	}
 	revision := d.Get("revision").(int)
 	requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentRevisionPath, c.Organization, newProxyDeployment.EnvironmentName, newProxyDeployment.ProxyName, revision)
@@ -111,6 +121,13 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 	revision, _ := strconv.Atoi(lastRevision)
 	d.Set("revision", revision)
+	if c.IsGoogle() {
+		googleRetVal := retVal.(*client.GoogleProxyEnvironmentDeployment)
+		serviceAccount := googleRetVal.Deployments[len(googleRetVal.Deployments)-1].ServiceAccount
+		d.Set("service_account", serviceAccount)
+	} else {
+		d.Set("service_account", nil)
+	}
 	return diags
 }
 
@@ -132,6 +149,12 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 	if !c.IsGoogle() {
 		requestForm["delay"] = []string{strconv.Itoa(delay)}
+	}
+	if d.Get("service_account") != nil {
+		if !c.IsGoogle() {
+		    return diag.Errorf("cannot set service_account for non-Google clients")
+		}
+		requestForm["serviceAccount"] = []string{d.Get("service_account").(string)}
 	}
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.FormEncoded},
