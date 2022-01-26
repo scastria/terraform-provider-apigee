@@ -121,9 +121,25 @@ func resourceProxyRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 	d.Set("name", d.Id())
-	//Retrieve the latest revision available as THE revision, assumes array is sorted
-	lastRevision := retVal.Revisions[len(retVal.Revisions)-1]
-	revision, _ := strconv.Atoi(lastRevision)
+	//Empirically the revisions array is sorted *alphabetically* when we get
+	//it which means that, for example, an API with 10 revisions comes back
+	//with a revision list of 1, 10, 2, 3, 4, 5, 6, 7, 8, 9. As such we need
+	//to iteratate over the entire array to determine the latest revision.
+	//Any errors which arise parsing revision numbers are returned as a
+	//diagnostic.
+	revision := 0
+	for _, revisionStr := range retVal.Revisions {
+		rn, err := strconv.Atoi(revisionStr)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if rn > revision {
+			revision = rn
+		}
+	}
+	if revision == 0 {
+		return diag.Errorf("proxy has no latest revision")
+	}
 	d.Set("revision", revision)
 	return diags
 }
