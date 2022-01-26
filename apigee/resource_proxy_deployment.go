@@ -47,8 +47,8 @@ func resourceProxyDeployment() *schema.Resource {
 				DiffSuppressFunc: resourceProxyDelayDiff,
 			},
 			"service_account": {
-				Type:             schema.TypeString,
-				Optional:         true,
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}
@@ -68,7 +68,7 @@ func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 	if d.Get("service_account") != nil {
 		if !c.IsGoogle() {
-			return diag.Errorf("service_account cannot be set for non-Google organizations")
+			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
 		newProxyDeployment.ServiceAccount = d.Get("service_account").(string)
 	}
@@ -152,7 +152,7 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 	if d.Get("service_account") != nil {
 		if !c.IsGoogle() {
-		    return diag.Errorf("cannot set service_account for non-Google clients")
+			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
 		requestForm["serviceAccount"] = []string{d.Get("service_account").(string)}
 	}
