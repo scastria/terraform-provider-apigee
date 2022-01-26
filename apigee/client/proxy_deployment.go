@@ -11,6 +11,7 @@ type ProxyEnvironmentDeployment struct {
 	ProxyName       string                               `json:"name"`
 	EnvironmentName string                               `json:"environment"`
 	Revisions       []ProxyEnvironmentRevisionDeployment `json:"revision"`
+	ServiceAccount  string                               `json:"serviceAccount"`
 }
 type ProxyEnvironmentRevisionDeployment struct {
 	Name string `json:"name"`
@@ -22,6 +23,7 @@ type GoogleProxyEnvironmentDeploymentDeployments struct {
 	ProxyName       string `json:"apiProxy"`
 	EnvironmentName string `json:"environment"`
 	Revision        string `json:"revision"`
+	ServiceAccount  string `json:"serviceAccount"`
 }
 
 func (c *ProxyEnvironmentDeployment) ProxyDeploymentEncodeId() string {
