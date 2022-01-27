@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 func resourceSharedFlowDeployment() *schema.Resource {
@@ -46,6 +47,10 @@ func resourceSharedFlowDeployment() *schema.Resource {
 				ValidateFunc:     validation.IntAtLeast(0),
 				DiffSuppressFunc: resourceSharedFlowDelayDiff,
 			},
+			"service_account": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -61,6 +66,12 @@ func resourceSharedFlowDeploymentCreate(ctx context.Context, d *schema.ResourceD
 	newSharedFlowDeployment := client.SharedFlowDeployment{
 		EnvironmentName: d.Get("environment_name").(string),
 		SharedFlowName:  d.Get("shared_flow_name").(string),
+	}
+	if d.Get("service_account") != nil {
+		if !c.IsGoogle() {
+			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
+		}
+		newSharedFlowDeployment.ServiceAccount = d.Get("service_account").(string)
 	}
 	revision := d.Get("revision").(int)
 	requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, newSharedFlowDeployment.EnvironmentName, newSharedFlowDeployment.SharedFlowName, revision)
@@ -111,6 +122,14 @@ func resourceSharedFlowDeploymentRead(ctx context.Context, d *schema.ResourceDat
 	}
 	revision, _ := strconv.Atoi(lastRevision)
 	d.Set("revision", revision)
+	if c.IsGoogle() {
+		googleRetVal := retVal.(*client.GoogleSharedFlowDeployment)
+		serviceAccount := googleRetVal.Deployments[len(googleRetVal.Deployments)-1].ServiceAccount
+		//When reading the service account, it is prefixed by "projects/-/serviceAccounts/"
+		d.Set("service_account", strings.TrimPrefix(serviceAccount, "projects/-/serviceAccounts/"))
+	} else {
+		d.Set("service_account", nil)
+	}
 	return diags
 }
 
@@ -126,6 +145,12 @@ func resourceSharedFlowDeploymentUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	if !c.IsGoogle() {
 		requestForm["delay"] = []string{strconv.Itoa(delay)}
+	}
+	if d.Get("service_account") != nil {
+		if !c.IsGoogle() {
+			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
+		}
+		requestForm["serviceAccount"] = []string{d.Get("service_account").(string)}
 	}
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.FormEncoded},
