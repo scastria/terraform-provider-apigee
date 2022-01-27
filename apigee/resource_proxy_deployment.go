@@ -67,7 +67,7 @@ func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, 
 		EnvironmentName: d.Get("environment_name").(string),
 		ProxyName:       d.Get("proxy_name").(string),
 	}
-	if d.Get("service_account") != nil {
+	if d.Get("service_account").(string) != "" {
 		if !c.IsGoogle() {
 			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
@@ -128,7 +128,7 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 		//When reading the service account, it is prefixed by "projects/-/serviceAccounts/"
 		d.Set("service_account", strings.TrimPrefix(serviceAccount, "projects/-/serviceAccounts/"))
 	} else {
-		d.Set("service_account", nil)
+		d.Set("service_account", "")
 	}
 	return diags
 }
@@ -152,7 +152,7 @@ func resourceProxyDeploymentUpdate(ctx context.Context, d *schema.ResourceData, 
 	if !c.IsGoogle() {
 		requestForm["delay"] = []string{strconv.Itoa(delay)}
 	}
-	if d.Get("service_account") != nil {
+	if d.Get("service_account").(string) != "" {
 		if !c.IsGoogle() {
 			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}

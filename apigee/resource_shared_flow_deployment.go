@@ -67,7 +67,7 @@ func resourceSharedFlowDeploymentCreate(ctx context.Context, d *schema.ResourceD
 		EnvironmentName: d.Get("environment_name").(string),
 		SharedFlowName:  d.Get("shared_flow_name").(string),
 	}
-	if d.Get("service_account") != nil {
+	if d.Get("service_account").(string) != "" {
 		if !c.IsGoogle() {
 			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
@@ -128,7 +128,7 @@ func resourceSharedFlowDeploymentRead(ctx context.Context, d *schema.ResourceDat
 		//When reading the service account, it is prefixed by "projects/-/serviceAccounts/"
 		d.Set("service_account", strings.TrimPrefix(serviceAccount, "projects/-/serviceAccounts/"))
 	} else {
-		d.Set("service_account", nil)
+		d.Set("service_account", "")
 	}
 	return diags
 }
@@ -146,7 +146,7 @@ func resourceSharedFlowDeploymentUpdate(ctx context.Context, d *schema.ResourceD
 	if !c.IsGoogle() {
 		requestForm["delay"] = []string{strconv.Itoa(delay)}
 	}
-	if d.Get("service_account") != nil {
+	if d.Get("service_account").(string) != "" {
 		if !c.IsGoogle() {
 			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
