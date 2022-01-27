@@ -11,6 +11,7 @@ type SharedFlowDeployment struct {
 	SharedFlowName  string                         `json:"name"`
 	EnvironmentName string                         `json:"environment"`
 	Revisions       []SharedFlowRevisionDeployment `json:"revision"`
+	ServiceAccount  string                         `json:"serviceAccount"`
 }
 type SharedFlowRevisionDeployment struct {
 	Name string `json:"name"`
@@ -24,6 +25,7 @@ type GoogleSharedFlowDeploymentDeployments struct {
 	SharedFlowName  string `json:"apiProxy"`
 	EnvironmentName string `json:"environment"`
 	Revision        string `json:"revision"`
+	ServiceAccount  string `json:"serviceAccount"`
 }
 
 func (c *SharedFlowDeployment) SharedFlowDeploymentEncodeId() string {

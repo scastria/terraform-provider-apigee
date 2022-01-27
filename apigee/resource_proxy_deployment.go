@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 func resourceProxyDeployment() *schema.Resource {
@@ -124,7 +125,8 @@ func resourceProxyDeploymentRead(ctx context.Context, d *schema.ResourceData, m 
 	if c.IsGoogle() {
 		googleRetVal := retVal.(*client.GoogleProxyEnvironmentDeployment)
 		serviceAccount := googleRetVal.Deployments[len(googleRetVal.Deployments)-1].ServiceAccount
-		d.Set("service_account", serviceAccount)
+		//When reading the service account, it is prefixed by "projects/-/serviceAccounts/"
+		d.Set("service_account", strings.TrimPrefix(serviceAccount, "projects/-/serviceAccounts/"))
 	} else {
 		d.Set("service_account", nil)
 	}

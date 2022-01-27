@@ -21,6 +21,7 @@ resource "apigee_shared_flow_deployment" "example" {
 * `environment_name` - **(Required, ForceNew, String)** The environment to deploy the shared_flow to.
 * `revision` - **(Required, Integer)** The revision of the shared_flow to deploy.  On create, it will assume the shared_flow has not been deployed in the given environment yet.  On update, it will override any current deployment to the given environment.
 * `delay` - **(Optional, Integer)** Time interval, in seconds, to wait before undeploying the currently deployed revision.  Default: 0. Ignored for calculating diffs.
+* `service_account` - **(Optional, String)** For Google Cloud Apigee version, specify the service account associated with the deployment. See the [Google documentation](https://cloud.google.com/apigee/docs/api-platform/security/google-auth/overview#about-service-account-permissions) for permissions required by the deploying user.
 ## Attribute Reference
 * `id` - Same as `environment_name`:`shared_flow_name`
 ## Import
