@@ -63,6 +63,7 @@ func resourceProxyDelayDiff(k string, old string, n string, d *schema.ResourceDa
 func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
+	v := url.Values{}
 	newProxyDeployment := client.ProxyEnvironmentDeployment{
 		EnvironmentName: d.Get("environment_name").(string),
 		ProxyName:       d.Get("proxy_name").(string),
@@ -72,10 +73,11 @@ func resourceProxyDeploymentCreate(ctx context.Context, d *schema.ResourceData, 
 			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
 		newProxyDeployment.ServiceAccount = d.Get("service_account").(string)
+		v.Set("serviceAccount", newProxyDeployment.ServiceAccount)
 	}
 	revision := d.Get("revision").(int)
 	requestPath := fmt.Sprintf(client.ProxyEnvironmentDeploymentRevisionPath, c.Organization, newProxyDeployment.EnvironmentName, newProxyDeployment.ProxyName, revision)
-	_, err := c.HttpRequest(http.MethodPost, requestPath, nil, nil, &bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodPost, requestPath, v, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)

@@ -63,6 +63,7 @@ func resourceSharedFlowDelayDiff(k string, old string, n string, d *schema.Resou
 func resourceSharedFlowDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
+	v := url.Values{}
 	newSharedFlowDeployment := client.SharedFlowDeployment{
 		EnvironmentName: d.Get("environment_name").(string),
 		SharedFlowName:  d.Get("shared_flow_name").(string),
@@ -72,10 +73,11 @@ func resourceSharedFlowDeploymentCreate(ctx context.Context, d *schema.ResourceD
 			return diag.Errorf("service_account cannot be set for non-Google Cloud Apigee versions")
 		}
 		newSharedFlowDeployment.ServiceAccount = d.Get("service_account").(string)
+		v.Set("serviceAccount", newSharedFlowDeployment.ServiceAccount)
 	}
 	revision := d.Get("revision").(int)
 	requestPath := fmt.Sprintf(client.SharedFlowDeploymentRevisionPath, c.Organization, newSharedFlowDeployment.EnvironmentName, newSharedFlowDeployment.SharedFlowName, revision)
-	_, err := c.HttpRequest(http.MethodPost, requestPath, nil, nil, &bytes.Buffer{})
+	_, err := c.HttpRequest(http.MethodPost, requestPath, v, nil, &bytes.Buffer{})
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
