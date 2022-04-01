@@ -80,19 +80,38 @@ func resourceTargetServerCreate(ctx context.Context, d *schema.ResourceData, m i
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	newTargetServer := client.TargetServer{
-		EnvironmentName: d.Get("environment_name").(string),
-		Name:            d.Get("name").(string),
-		Host:            d.Get("host").(string),
-		Port:            d.Get("port").(int),
+	var newTargetServer interface{}
+	if c.IsGoogle() {
+		newTS := client.GoogleTargetServer{
+			EnvironmentName: d.Get("environment_name").(string),
+			Name:            d.Get("name").(string),
+			Host:            d.Get("host").(string),
+			Port:            d.Get("port").(int),
+		}
+		fillGoogleTargetServer(&newTS, d)
+		newTargetServer = &newTS
+	} else {
+		newTS := client.TargetServer{
+			EnvironmentName: d.Get("environment_name").(string),
+			Name:            d.Get("name").(string),
+			Host:            d.Get("host").(string),
+			Port:            d.Get("port").(int),
+		}
+		fillTargetServer(&newTS, d)
+		newTargetServer = &newTS
 	}
-	fillTargetServer(&newTargetServer, d)
 	err := json.NewEncoder(&buf).Encode(newTargetServer)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	requestPath := fmt.Sprintf(client.TargetServerPath, c.Organization, newTargetServer.EnvironmentName)
+	var envName string
+	if c.IsGoogle() {
+		envName = newTargetServer.(*client.GoogleTargetServer).EnvironmentName
+	} else {
+		envName = newTargetServer.(*client.TargetServer).EnvironmentName
+	}
+	requestPath := fmt.Sprintf(client.TargetServerPath, c.Organization, envName)
 	requestHeaders := http.Header{
 		headers.ContentType: []string{client.ApplicationJson},
 	}
@@ -101,7 +120,11 @@ func resourceTargetServerCreate(ctx context.Context, d *schema.ResourceData, m i
 		d.SetId("")
 		return diag.FromErr(err)
 	}
-	d.SetId(newTargetServer.TargetServerEncodeId())
+	if c.IsGoogle() {
+		d.SetId(newTargetServer.(*client.GoogleTargetServer).TargetServerEncodeId())
+	} else {
+		d.SetId(newTargetServer.(*client.TargetServer).TargetServerEncodeId())
+	}
 	return diags
 }
 
@@ -134,6 +157,35 @@ func fillTargetServer(c *client.TargetServer, d *schema.ResourceData) {
 	}
 }
 
+func fillGoogleTargetServer(c *client.GoogleTargetServer, d *schema.ResourceData) {
+	isEnabled, ok := d.GetOk("is_enabled")
+	if ok {
+		c.IsEnabled = isEnabled.(bool)
+	}
+	sslEnabled, ok := d.GetOk("ssl_enabled")
+	if sslEnabled.(bool) {
+		c.SSLInfo = &client.GoogleSSL{
+			Enabled: true,
+		}
+		sslKeyStore, ok := d.GetOk("ssl_keystore")
+		if ok {
+			c.SSLInfo.KeyStore = sslKeyStore.(string)
+		}
+		sslKeyAlias, ok := d.GetOk("ssl_keyalias")
+		if ok {
+			c.SSLInfo.KeyAlias = sslKeyAlias.(string)
+		}
+		sslTrustStore, ok := d.GetOk("ssl_truststore")
+		if ok {
+			c.SSLInfo.TrustStore = sslTrustStore.(string)
+		}
+		sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
+		c.SSLInfo.ClientAuthEnabled = sslClientAuthEnabled.(bool)
+		sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
+		c.SSLInfo.IgnoreValidationErrors = sslIgnoreValidationErrors.(bool)
+	}
+}
+
 func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	envName, name := client.TargetServerDecodeId(d.Id())
@@ -148,26 +200,63 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diag.FromErr(err)
 	}
-	retVal := &client.TargetServer{}
+	var retVal interface{}
+	if c.IsGoogle() {
+		retVal = &client.GoogleTargetServer{}
+	} else {
+		retVal = &client.TargetServer{}
+	}
 	err = json.NewDecoder(body).Decode(retVal)
 	if err != nil {
 		d.SetId("")
 		return diag.FromErr(err)
 	}
+	var host, keyStore, keyAlias, trustStore string
+	var port int
+	var isEnabled, hasSSL, sslEnabled, clientAuthEnabled, ignoreValidationErrors bool
+	if c.IsGoogle() {
+		ts := retVal.(*client.GoogleTargetServer)
+		host = ts.Host
+		port = ts.Port
+		isEnabled = ts.IsEnabled
+		hasSSL = ts.SSLInfo != nil
+		if hasSSL {
+			keyStore = ts.SSLInfo.KeyStore
+			keyAlias = ts.SSLInfo.KeyAlias
+			trustStore = ts.SSLInfo.TrustStore
+			sslEnabled = ts.SSLInfo.Enabled
+			clientAuthEnabled = ts.SSLInfo.ClientAuthEnabled
+			ignoreValidationErrors = ts.SSLInfo.IgnoreValidationErrors
+		}
+	} else {
+		ts := retVal.(*client.TargetServer)
+		host = ts.Host
+		port = ts.Port
+		isEnabled = ts.IsEnabled
+		hasSSL = ts.SSLInfo != nil
+		if hasSSL {
+			keyStore = ts.SSLInfo.KeyStore
+			keyAlias = ts.SSLInfo.KeyAlias
+			trustStore = ts.SSLInfo.TrustStore
+			sslEnabledBool, _ := strconv.ParseBool(ts.SSLInfo.Enabled)
+			sslEnabled = sslEnabledBool
+			clientAuthEnabledBool, _ := strconv.ParseBool(ts.SSLInfo.ClientAuthEnabled)
+			clientAuthEnabled = clientAuthEnabledBool
+			ignoreValidationErrors = ts.SSLInfo.IgnoreValidationErrors
+		}
+	}
 	d.Set("environment_name", envName)
 	d.Set("name", name)
-	d.Set("host", retVal.Host)
-	d.Set("port", retVal.Port)
-	d.Set("is_enabled", retVal.IsEnabled)
-	if retVal.SSLInfo != nil {
-		sslEnabled, _ := strconv.ParseBool(retVal.SSLInfo.Enabled)
+	d.Set("host", host)
+	d.Set("port", port)
+	d.Set("is_enabled", isEnabled)
+	if hasSSL {
 		d.Set("ssl_enabled", sslEnabled)
-		d.Set("ssl_keystore", retVal.SSLInfo.KeyStore)
-		d.Set("ssl_keyalias", retVal.SSLInfo.KeyAlias)
-		d.Set("ssl_truststore", retVal.SSLInfo.TrustStore)
-		sslClientAuthEnabled, _ := strconv.ParseBool(retVal.SSLInfo.ClientAuthEnabled)
-		d.Set("ssl_client_auth_enabled", sslClientAuthEnabled)
-		d.Set("ssl_ignore_validation_errors", retVal.SSLInfo.IgnoreValidationErrors)
+		d.Set("ssl_keystore", keyStore)
+		d.Set("ssl_keyalias", keyAlias)
+		d.Set("ssl_truststore", trustStore)
+		d.Set("ssl_client_auth_enabled", clientAuthEnabled)
+		d.Set("ssl_ignore_validation_errors", ignoreValidationErrors)
 	} else {
 		d.Set("ssl_enabled", false)
 		d.Set("ssl_keystore", "")
@@ -184,13 +273,26 @@ func resourceTargetServerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	envName, name := client.TargetServerDecodeId(d.Id())
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
-	upTargetServer := client.TargetServer{
-		EnvironmentName: envName,
-		Name:            name,
-		Host:            d.Get("host").(string),
-		Port:            d.Get("port").(int),
+	var upTargetServer interface{}
+	if c.IsGoogle() {
+		upTS := client.GoogleTargetServer{
+			EnvironmentName: envName,
+			Name:            name,
+			Host:            d.Get("host").(string),
+			Port:            d.Get("port").(int),
+		}
+		fillGoogleTargetServer(&upTS, d)
+		upTargetServer = &upTS
+	} else {
+		upTS := client.TargetServer{
+			EnvironmentName: envName,
+			Name:            name,
+			Host:            d.Get("host").(string),
+			Port:            d.Get("port").(int),
+		}
+		fillTargetServer(&upTS, d)
+		upTargetServer = &upTS
 	}
-	fillTargetServer(&upTargetServer, d)
 	err := json.NewEncoder(&buf).Encode(upTargetServer)
 	if err != nil {
 		return diag.FromErr(err)
