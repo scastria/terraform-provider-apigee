@@ -24,6 +24,7 @@ resource "apigee_target_server" "example" {
 * `ssl_truststore` - **(Optional, String)** Name of the truststore that contains the certificate
 * `ssl_client_auth_enabled` - **(Optional, Boolean)** Enable two-way TLS between Apigee and target
 * `ssl_ignore_validation_errors` - **(Optional, Boolean)** Ignore TLS certificate errors
+* `protocols` - **(Optional, List)** Specifies the protocols supported by the TargetServer. For example, SSLv3, TLSv1, TLSv1.1, or TLSv1.2. If no protocols are specified, then all protocols available for the JVM will be permitted.
 ## Attribute Reference
 * `id` - Same as `environment_name`:`name`
 ## Import
