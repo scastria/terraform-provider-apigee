@@ -72,6 +72,13 @@ func resourceTargetServer() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"protocols": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -150,6 +157,11 @@ func fillTargetServer(c *client.TargetServer, d *schema.ResourceData) {
 		if ok {
 			c.SSLInfo.TrustStore = sslTrustStore.(string)
 		}
+		protocols, ok := d.GetOk("protocols")
+		if ok {
+			set := protocols.(*schema.Set)
+			c.SSLInfo.Protocols = convertSetToArray(set)
+		}
 		sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
 		c.SSLInfo.ClientAuthEnabled = strconv.FormatBool(sslClientAuthEnabled.(bool))
 		sslIgnoreValidationErrors, ok := d.GetOk("ssl_ignore_validation_errors")
@@ -178,6 +190,11 @@ func fillGoogleTargetServer(c *client.GoogleTargetServer, d *schema.ResourceData
 		sslTrustStore, ok := d.GetOk("ssl_truststore")
 		if ok {
 			c.SSLInfo.TrustStore = sslTrustStore.(string)
+		}
+		protocols, ok := d.GetOk("protocols")
+		if ok {
+			set := protocols.(*schema.Set)
+			c.SSLInfo.Protocols = convertSetToArray(set)
 		}
 		sslClientAuthEnabled, ok := d.GetOk("ssl_client_auth_enabled")
 		c.SSLInfo.ClientAuthEnabled = sslClientAuthEnabled.(bool)
@@ -214,6 +231,7 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 	var host, keyStore, keyAlias, trustStore string
 	var port int
 	var isEnabled, hasSSL, sslEnabled, clientAuthEnabled, ignoreValidationErrors bool
+	var protocols []string
 	if c.IsGoogle() {
 		ts := retVal.(*client.GoogleTargetServer)
 		host = ts.Host
@@ -227,6 +245,7 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 			sslEnabled = ts.SSLInfo.Enabled
 			clientAuthEnabled = ts.SSLInfo.ClientAuthEnabled
 			ignoreValidationErrors = ts.SSLInfo.IgnoreValidationErrors
+			protocols = ts.SSLInfo.Protocols
 		}
 	} else {
 		ts := retVal.(*client.TargetServer)
@@ -243,6 +262,7 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 			clientAuthEnabledBool, _ := strconv.ParseBool(ts.SSLInfo.ClientAuthEnabled)
 			clientAuthEnabled = clientAuthEnabledBool
 			ignoreValidationErrors = ts.SSLInfo.IgnoreValidationErrors
+			protocols = ts.SSLInfo.Protocols
 		}
 	}
 	d.Set("environment_name", envName)
@@ -257,6 +277,7 @@ func resourceTargetServerRead(ctx context.Context, d *schema.ResourceData, m int
 		d.Set("ssl_truststore", trustStore)
 		d.Set("ssl_client_auth_enabled", clientAuthEnabled)
 		d.Set("ssl_ignore_validation_errors", ignoreValidationErrors)
+		d.Set("protocols", protocols)
 	} else {
 		d.Set("ssl_enabled", false)
 		d.Set("ssl_keystore", "")
