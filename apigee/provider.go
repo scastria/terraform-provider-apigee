@@ -33,6 +33,11 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("APIGEE_ACCESS_TOKEN", nil),
 				ConflictsWith: []string{"username", "password", "oauth_server"},
 			},
+			"use_ssl": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 			"server": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -115,6 +120,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	accessToken := d.Get("access_token").(string)
+	useSSL := d.Get("use_ssl").(bool)
 	server := d.Get("server").(string)
 	serverPath := d.Get("server_path").(string)
 	port := d.Get("port").(int)
@@ -129,7 +135,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	var diags diag.Diagnostics
-	c, err := client.NewClient(username, password, accessToken, server, serverPath, port, oauthServer, oauthServerPath, oauthPort, organization)
+	c, err := client.NewClient(username, password, accessToken, useSSL, server, serverPath, port, oauthServer, oauthServerPath, oauthPort, organization)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}

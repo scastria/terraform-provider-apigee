@@ -54,6 +54,7 @@ resource "apigee_role" "example" {
 * `username` - **(Optional, String)** The username that will invoke all Apigee API commands. Basic Authentication. Or can be machine user for automatic machine user authentication using `oauth_server`. Can be specified via env variable `APIGEE_USERNAME`.
 * `password` - **(Optional, String)** The password of the username. Basic Authentication. Or can be machine password for automatic machine user authentication using `oauth_server`. Can be specified via env variable `APIGEE_PASSWORD`.
 * `access_token` - **(Optional, String)** The access token from SAML or OAUTH authentication that can be used instead of `username` and `password`. Token Authentication. Can be specified via env variable `APIGEE_ACCESS_TOKEN`.
+* `use_ssl` - **(Optional, Boolean)** Whether to use https or http for Apigee server communication. Default: `true`.
 * `server` - **(Optional, String)** The hostname of the Apigee Management API server. Default: `api.enterprise.apigee.com`. Can be specified via env variable `APIGEE_SERVER`.
 * `server_path` - **(Optional, String)** The additional path of the Apigee Management API server. Default: `v1`. Can be specified via env variable `APIGEE_SERVER_PATH`.
 * `port` - **(Optional, Integer)** The port to use for the server. Default: `443`. Can be specified via env variable `APIGEE_PORT`.

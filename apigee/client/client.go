@@ -26,12 +26,15 @@ const (
 	PublicApigeeServer   = "api.enterprise.apigee.com"
 	GoogleApigeeServer   = "apigee.googleapis.com"
 	ServerPath           = "v1"
+	HTTP                 = "http"
+	HTTPS                = "https"
 )
 
 type Client struct {
 	username        string
 	password        string
 	accessToken     string
+	useSSL          bool
 	server          string
 	serverPath      string
 	port            int
@@ -46,11 +49,12 @@ type FormData struct {
 	Text     string
 }
 
-func NewClient(username string, password string, accessToken string, server string, serverPath string, port int, oauthServer string, oauthServerPath string, oauthPort int, organization string) (client *Client, err error) {
+func NewClient(username string, password string, accessToken string, useSSL bool, server string, serverPath string, port int, oauthServer string, oauthServerPath string, oauthPort int, organization string) (client *Client, err error) {
 	c := &Client{
 		username:        username,
 		password:        password,
 		accessToken:     accessToken,
+		useSSL:          useSSL,
 		server:          server,
 		serverPath:      serverPath,
 		port:            port,
@@ -64,10 +68,16 @@ func NewClient(username string, password string, accessToken string, server stri
 	if c.oauthServer != "" {
 		log.Print("Apigee Management API: Obtaining access token...")
 		var requestURL string
-		if c.oauthServerPath != "" {
-			requestURL = fmt.Sprintf("https://%s:%d/%s/%s", c.oauthServer, c.oauthPort, c.oauthServerPath, OauthTokenPath)
+		var scheme string
+		if c.useSSL {
+			scheme = HTTPS
 		} else {
-			requestURL = fmt.Sprintf("https://%s:%d/%s", c.oauthServer, c.oauthPort, OauthTokenPath)
+			scheme = HTTP
+		}
+		if c.oauthServerPath != "" {
+			requestURL = fmt.Sprintf("%s://%s:%d/%s/%s", scheme, c.oauthServer, c.oauthPort, c.oauthServerPath, OauthTokenPath)
+		} else {
+			requestURL = fmt.Sprintf("%s://%s:%d/%s", scheme, c.oauthServer, c.oauthPort, OauthTokenPath)
 		}
 		requestForm := url.Values{
 			"grant_type": []string{"password"},
@@ -171,9 +181,14 @@ func (c *Client) HttpRequest(method string, path string, query url.Values, heade
 	return resp.Body, nil
 }
 
-// TODO: Allow non-SSL
 func (c *Client) requestPath(path string) string {
-	return fmt.Sprintf("https://%s:%d/%s/%s", c.server, c.port, c.serverPath, path)
+	var scheme string
+	if c.useSSL {
+		scheme = HTTPS
+	} else {
+		scheme = HTTP
+	}
+	return fmt.Sprintf("%s://%s:%d/%s/%s", scheme, c.server, c.port, c.serverPath, path)
 }
 
 func GetBuffer(filename string) (*bytes.Buffer, error) {
