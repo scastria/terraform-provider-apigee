@@ -5,13 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"net/http"
-	"strconv"
 )
 
 func resourceProduct() *schema.Resource {
@@ -94,11 +95,59 @@ func resourceProduct() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"operation": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_source": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"path": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"methods": {
+							Type:     schema.TypeSet,
+							Required: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"quota": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntAtLeast(1),
+							RequiredWith: []string{"quota_interval", "quota_time_unit"},
+						},
+						"quota_interval": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntAtLeast(1),
+							RequiredWith: []string{"quota", "quota_time_unit"},
+						},
+						"quota_time_unit": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice([]string{"minute", "hour", "day", "month"}, false),
+							RequiredWith: []string{"quota", "quota_interval"},
+						},
+						"attributes": {
+							Type:     schema.TypeMap,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func resourceProductCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceProductCreate(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
@@ -180,9 +229,69 @@ func fillProduct(c *client.Product, d *schema.ResourceData) {
 			})
 		}
 	}
+	ops, ok := d.GetOk("operation")
+	if ok {
+		fillOperationsConfig(c, ops)
+	}
 }
 
-func resourceProductRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func fillOperationsConfig(c *client.Product, ops interface{}) {
+	operations := ops.([]interface{})
+	c.OperationGroup.OperationConfigs = make([]client.OperationConfigs, len(operations))
+	c.OperationGroup.OperationConfigType = "proxy" // Currently, the only supported type
+	for i, op := range operations {
+		item := op.(map[string]interface{})
+		q := client.Quota{}
+
+		quota, ok := item["quota"].(int)
+		if ok && quota > 0 {
+			q.Limit = strconv.Itoa(quota)
+			q.Interval = strconv.Itoa(item["quota_interval"].(int))
+			q.TimeUnit = item["quota_time_unit"].(string)
+		}
+
+		attributes := item["attributes"].(map[string]interface{})
+		var attribs []client.Attribute
+		for name, value := range attributes {
+			attribs = append(attribs, client.Attribute{
+				Name:  name,
+				Value: value.(string),
+			})
+		}
+
+		c.OperationGroup.OperationConfigs[i] = client.OperationConfigs{
+			ApiSource: item["api_source"].(string),
+			Operations: []client.Operation{{
+				Resource: item["path"].(string),
+				Methods:  convertSetToArray(item["methods"].(*schema.Set)),
+			}},
+			Quota:      q,
+			Attributes: attribs,
+		}
+	}
+}
+
+func readOperationsConfig(c client.OperationGroup) []interface{} {
+	operations := make([]interface{}, len(c.OperationConfigs))
+	for i, config := range c.OperationConfigs {
+		atts := map[string]string{}
+		for _, e := range config.Attributes {
+			atts[e.Name] = e.Value
+		}
+		operations[i] = map[string]interface{}{
+			"api_source":      config.ApiSource,
+			"path":            config.Operations[0].Resource,
+			"methods":         config.Operations[0].Methods,
+			"quota":           config.Quota.Limit,
+			"quota_interval":  config.Quota.Interval,
+			"quota_time_unit": config.Quota.TimeUnit,
+			"attributes":      atts,
+		}
+	}
+	return operations
+}
+
+func resourceProductRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.ProductPathGet, c.Organization, d.Id())
@@ -225,10 +334,11 @@ func resourceProductRead(ctx context.Context, d *schema.ResourceData, m interfac
 		atts[e.Name] = e.Value
 	}
 	d.Set("attributes", atts)
+	d.Set("operations", readOperationsConfig(retVal.OperationGroup))
 	return diags
 }
 
-func resourceProductUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceProductUpdate(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
@@ -260,7 +370,7 @@ func resourceProductUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-func resourceProductDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceProductDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	requestPath := fmt.Sprintf(client.ProductPathGet, c.Organization, d.Id())
