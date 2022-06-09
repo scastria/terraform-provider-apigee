@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scastria/terraform-provider-apigee/apigee/client"
-	"net/http"
 )
 
 func resourceEnvironmentKVM() *schema.Resource {
@@ -58,7 +59,7 @@ func resourceEnvironmentKVM() *schema.Resource {
 	}
 }
 
-func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEnvironmentKVMCreate(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*client.Client)
 	buf := bytes.Buffer{}
@@ -66,7 +67,7 @@ func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m
 		EnvironmentName: d.Get("environment_name").(string),
 		Name:            d.Get("name").(string),
 	}
-	fillEnvironmentKVM(&newEnvironmentKVM, d)
+	fillEnvironmentKVM(&newEnvironmentKVM, c.IsPublic(), d)
 	err := json.NewEncoder(&buf).Encode(newEnvironmentKVM)
 	if err != nil {
 		d.SetId("")
@@ -82,10 +83,39 @@ func resourceEnvironmentKVMCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	d.SetId(newEnvironmentKVM.EnvironmentKVMEncodeId())
+
+	// Create individual KVM's on Apigee public
+	if c.IsPublic() {
+		e, ok := d.GetOk("sensitive_entry")
+		if ok {
+			entries := e.(map[string]interface{})
+			for name, value := range entries {
+				buf = bytes.Buffer{}
+				err = json.NewEncoder(&buf).Encode(client.Attribute{
+					Name:  name,
+					Value: value.(string),
+				})
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				requestPath = fmt.Sprintf(client.EnvironmentKVMPathEntries, c.Organization, newEnvironmentKVM.EnvironmentName, newEnvironmentKVM.Name)
+				_, err = c.HttpRequest(http.MethodPost, requestPath, nil, requestHeaders, &buf)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				newEnvironmentKVM.Entries = append(newEnvironmentKVM.Entries, client.Attribute{
+					Name:  name,
+					Value: value.(string),
+				})
+			}
+		}
+	}
+
 	return diags
 }
 
-func fillEnvironmentKVM(c *client.KVM, d *schema.ResourceData) {
+func fillEnvironmentKVM(c *client.KVM, isPublic bool, d *schema.ResourceData) {
 	encrypted, ok := d.GetOk("encrypted")
 	if ok {
 		c.Encrypted = encrypted.(bool)
@@ -96,7 +126,7 @@ func fillEnvironmentKVM(c *client.KVM, d *schema.ResourceData) {
 	} else {
 		e, ok = d.GetOk("entry")
 	}
-	if ok {
+	if ok && !isPublic {
 		entries := e.(map[string]interface{})
 		for name, value := range entries {
 			c.Entries = append(c.Entries, client.Attribute{
@@ -107,10 +137,14 @@ func fillEnvironmentKVM(c *client.KVM, d *schema.ResourceData) {
 	}
 }
 
-func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEnvironmentKVMRead(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*client.Client)
+	if c.IsPublic() {
+		return resourceEnvironmentKVMReadPublic(d, m)
+	}
 	var diags diag.Diagnostics
 	envName, name := client.KVMDecodeId(d.Id())
-	c := m.(*client.Client)
+
 	requestPath := fmt.Sprintf(client.EnvironmentKVMPathGet, c.Organization, envName, name)
 	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
 	if err != nil {
@@ -142,7 +176,68 @@ func resourceEnvironmentKVMRead(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEnvironmentKVMReadPublic(d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+	envName, name := client.KVMDecodeId(d.Id())
+	c := m.(*client.Client)
+
+	requestPath := fmt.Sprintf(client.EnvironmentKVMPath, c.Organization, envName)
+	body, err := c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
+	if err != nil {
+		d.SetId("")
+		re := err.(*client.RequestError)
+		if re.StatusCode == http.StatusNotFound {
+			return diags
+		}
+		return diag.FromErr(err)
+	}
+
+	var retVal []string
+	err = json.NewDecoder(body).Decode(&retVal)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Find the specified KVM in the list, no get by ID method exists on public:
+	// https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments.keyvaluemaps/list
+	found := false
+	for _, s := range retVal {
+		if s == name {
+			found = true
+			d.Set("environment_name", envName)
+			d.Set("name", name)
+			d.Set("encrypted", true) // All Apigee cloud offerings are encrypted now
+
+			// Retrieve individual KV's
+			requestPath = fmt.Sprintf(client.EnvironmentKVMPathEntries, c.Organization, envName, name)
+			body, err = c.HttpRequest(http.MethodGet, requestPath, nil, nil, &bytes.Buffer{})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			var res client.KVMEntries
+			err = json.NewDecoder(body).Decode(&res)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			entries := map[string]string{}
+			for _, e := range res.KeyValueEntries {
+				entries[e.Name] = e.Value
+			}
+			d.Set("sensitive_entry", entries)
+			break
+		}
+	}
+
+	if !found {
+		d.SetId("")
+	}
+
+	return diags
+}
+
+func resourceEnvironmentKVMUpdate(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	envName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
@@ -158,7 +253,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 	oldE := o.(map[string]interface{})
 	newE := n.(map[string]interface{})
-	for oldKey, _ := range oldE {
+	for oldKey := range oldE {
 		_, newHasKey := newE[oldKey]
 		if newHasKey {
 			continue
@@ -176,7 +271,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 	//Public Apigee requires entries to be added/changed individually
 	if c.IsPublic() {
 		//Check for addition/modification of entries
-		for newKey, _ := range newE {
+		for newKey := range newE {
 			_, oldHasKey := oldE[newKey]
 			newOrModValue := newE[newKey].(string)
 			//Skip if change with same value
@@ -214,7 +309,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 			EnvironmentName: envName,
 			Name:            name,
 		}
-		fillEnvironmentKVM(&upEnvironmentKVM, d)
+		fillEnvironmentKVM(&upEnvironmentKVM, c.IsPublic(), d)
 		err := json.NewEncoder(&buf).Encode(upEnvironmentKVM)
 		if err != nil {
 			return diag.FromErr(err)
@@ -228,7 +323,7 @@ func resourceEnvironmentKVMUpdate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceEnvironmentKVMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEnvironmentKVMDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	envName, name := client.KVMDecodeId(d.Id())
 	c := m.(*client.Client)
