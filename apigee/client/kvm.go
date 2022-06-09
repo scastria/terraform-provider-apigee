@@ -27,6 +27,11 @@ type KVM struct {
 	ProxyName string `json:"-"`
 }
 
+type KVMEntries struct {
+	KeyValueEntries []Attribute `json:"keyValueEntries"`
+	NextPageToken   string      `json:"nextPageToken"`
+}
+
 func (c *KVM) EnvironmentKVMEncodeId() string {
 	return c.EnvironmentName + IdSeparator + c.Name
 }
