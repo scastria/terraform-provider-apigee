@@ -17,7 +17,7 @@ resource "apigee_target_server" "example" {
 * `name` - **(Required, ForceNew, String)** The name of the target server
 * `host` - **(Required, String)** The host name of the target server 
 * `port` - **(Required, Integer)** The port of the target server
-* `is_enabled` - **(Optional, Boolean)** Whether to enable this targer server for use
+* `is_enabled` - **(Optional, Boolean)** Whether to enable this target server for use
 * `ssl_enabled` - **(Optional, Boolean)** Whether to communicate with this target server over TLS/SSL
 * `ssl_keystore` - **(Optional, String)** Name of the keystore
 * `ssl_keyalias` - **(Optional, String)** Name of the alias within the keystore
