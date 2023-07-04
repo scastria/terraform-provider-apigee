@@ -185,6 +185,8 @@ func fillTargetServer(c *client.TargetServer, d *schema.ResourceData) {
 			value, ok := d.GetOk("ssl_common_name.0.value")
 			if ok {
 				c.SSLInfo.CommonName.Value = value.(string)
+			} else {
+				c.SSLInfo.CommonName.Value = c.Host
 			}
 
 			wildcard_match, ok := d.GetOk("ssl_common_name.0.wildcard_match")
@@ -233,6 +235,8 @@ func fillGoogleTargetServer(c *client.GoogleTargetServer, d *schema.ResourceData
 			value, ok := d.GetOk("ssl_common_name.0.value")
 			if ok {
 				c.SSLInfo.CommonName.Value = value.(string)
+			} else {
+				c.SSLInfo.CommonName.Value = c.Host
 			}
 
 			wildcard_match, ok := d.GetOk("ssl_common_name.0.wildcard_match")
