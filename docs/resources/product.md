@@ -58,7 +58,7 @@ resource "apigee_product" "example" {
   * `quota_interval` - **(Optional, Integer)** Time interval over which the number of request messages is calculated.
   * `quota_time_unit` - **(Optional, String)** Time unit defined for the `quota_interval`.  Allowed values: `minute`, `hour`, `day`, `month`.
   * `attributes` - **(Optional, Map of String to String)** Keys and values to be stored as custom attributes of the operation.
-* `operation_config_type` - **(Optional, String)** The Operation config type can either be `proxy`, `remoteservice`.
+* `operation_config_type` - **(Optional, String)** The Operation config type for the product, can either be `proxy` or `remoteservice`.
 
 ## Attribute Reference
 * `id` - Same as `name`
