@@ -95,6 +95,20 @@ func resourceProduct() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"operation_config_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: func(val interface{}, key string) ([]string, []error) {
+					value := val.(string)
+					if value != "proxy" && value != "remoteservice" {
+						return []string{}, []error{fmt.Errorf("Invalid value for %s, must be either 'proxy' or 'remoteservice'", key)}
+					}
+					return nil, nil
+				},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"operation": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -231,14 +245,19 @@ func fillProduct(c *client.Product, d *schema.ResourceData) {
 	}
 	ops, ok := d.GetOk("operation")
 	if ok {
-		fillOperationsConfig(c, ops)
+		oct, ok2 := d.GetOk("operation_config_type")
+		if ok2 {
+			fillOperationsConfig(c, ops, oct.(string))
+		} else {
+			fillOperationsConfig(c, ops, "proxy")
+		}
 	}
 }
 
-func fillOperationsConfig(c *client.Product, ops interface{}) {
+func fillOperationsConfig(c *client.Product, ops interface{}, oct string) {
 	operations := ops.([]interface{})
 	c.OperationGroup.OperationConfigs = make([]client.OperationConfigs, len(operations))
-	c.OperationGroup.OperationConfigType = "proxy" // Currently, the only supported type
+	c.OperationGroup.OperationConfigType = oct
 	for i, op := range operations {
 		item := op.(map[string]interface{})
 		q := client.Quota{}
@@ -335,6 +354,7 @@ func resourceProductRead(_ context.Context, d *schema.ResourceData, m interface{
 	}
 	d.Set("attributes", atts)
 	d.Set("operations", readOperationsConfig(retVal.OperationGroup))
+	d.Set("operaton_config_type", retVal.OperationGroup.OperationConfigType)
 	return diags
 }
 
