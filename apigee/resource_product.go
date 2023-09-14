@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"regexp"
 
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -96,18 +97,9 @@ func resourceProduct() *schema.Resource {
 				},
 			},
 			"operation_config_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: func(val interface{}, key string) ([]string, []error) {
-					value := val.(string)
-					if value != "proxy" && value != "remoteservice" {
-						return []string{}, []error{fmt.Errorf("Invalid value for %s, must be either 'proxy' or 'remoteservice'", key)}
-					}
-					return nil, nil
-				},
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(proxy|remoteservice)$`), "Invalid value, operation_config_type must be either 'proxy' or 'remoteservice'"),
 			},
 			"operation": {
 				Type:     schema.TypeList,
