@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"regexp"
+	"strconv"
 
 	"github.com/go-http-utils/headers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
