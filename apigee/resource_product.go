@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/go-http-utils/headers"
@@ -94,6 +95,11 @@ func resourceProduct() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"operation_config_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(proxy|remoteservice)$`), "Invalid value, operation_config_type must be either 'proxy' or 'remoteservice'"),
 			},
 			"operation": {
 				Type:     schema.TypeList,
@@ -231,14 +237,19 @@ func fillProduct(c *client.Product, d *schema.ResourceData) {
 	}
 	ops, ok := d.GetOk("operation")
 	if ok {
-		fillOperationsConfig(c, ops)
+		oct, ok2 := d.GetOk("operation_config_type")
+		if ok2 {
+			fillOperationsConfig(c, ops, oct.(string))
+		} else {
+			fillOperationsConfig(c, ops, "proxy")
+		}
 	}
 }
 
-func fillOperationsConfig(c *client.Product, ops interface{}) {
+func fillOperationsConfig(c *client.Product, ops interface{}, oct string) {
 	operations := ops.([]interface{})
 	c.OperationGroup.OperationConfigs = make([]client.OperationConfigs, len(operations))
-	c.OperationGroup.OperationConfigType = "proxy" // Currently, the only supported type
+	c.OperationGroup.OperationConfigType = oct
 	for i, op := range operations {
 		item := op.(map[string]interface{})
 		q := client.Quota{}
@@ -335,6 +346,7 @@ func resourceProductRead(_ context.Context, d *schema.ResourceData, m interface{
 	}
 	d.Set("attributes", atts)
 	d.Set("operations", readOperationsConfig(retVal.OperationGroup))
+	d.Set("operaton_config_type", retVal.OperationGroup.OperationConfigType)
 	return diags
 }
 
